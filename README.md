@@ -57,6 +57,10 @@ It is also possible to write a ruby code in placeholders, so you may write some 
 * ${time.strftime('%Y-%m-%dT%H:%M:%S%z')}
 * ${tags.last}  
 
+## Notice
+
+This plugin is dangerous since any ruby codes are executable. Do not allow anyone to write fluentd configuration from outside of your system. 
+
 ## Relatives
 
 * [fluent-plugin-record-modifier](https://github.com/repeatedly/fluent-plugin-record-modifier)
