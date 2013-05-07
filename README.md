@@ -59,7 +59,7 @@ It is also possible to write a ruby code in placeholders, so you may write some 
 
 ## Notice
 
-This plugin is dangerous since any ruby codes are executable. Do not allow anyone to write fluentd configuration from outside of your system. 
+Please note that this plugin enables to execute any ruby codes. Do not allow anyone to write fluentd configuration from outside of your system by security reasons.
 
 ## Relatives
 
