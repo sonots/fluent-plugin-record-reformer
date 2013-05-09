@@ -27,6 +27,9 @@ module Fluent
         Engine.emit(@output_tag, time, expand_record(record, tag, tags, time))
       }
       chain.next
+    rescue => e
+      $log.warn e.message
+      $log.warn e.backtrace.join(', ')
     end
 
     private
