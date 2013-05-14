@@ -1,6 +1,8 @@
-# fluent-plugin-record-reformer [![Build Status](https://secure.travis-ci.org/sonots/fluent-plugin-record-reformer.png?branch=master)](http://travis-ci.org/sonots/fluent-plugin-record-reformer) [![Dependency Status](https://gemnasium.com/sonots/fluent-plugin-record-reformer.png)](https://gemnasium.com/sonots/fluent-plugin-record-reformer) [![Coverage Status](https://coveralls.io/repos/sonots/fluent-plugin-record-reformer/badge.png?branch=master)](https://coveralls.io/r/sonots/fluent-plugin-record-reformer)
+# fluent-plugin-record-reformer
 
-Add or replace fields of a event record
+[![Build Status](https://secure.travis-ci.org/sonots/fluent-plugin-record-reformer.png?branch=master)](http://travis-ci.org/sonots/fluent-plugin-record-reformer) [![Dependency Status](https://gemnasium.com/sonots/fluent-plugin-record-reformer.png)](https://gemnasium.com/sonots/fluent-plugin-record-reformer) [![Coverage Status](https://coveralls.io/repos/sonots/fluent-plugin-record-reformer/badge.png?branch=master)](https://coveralls.io/r/sonots/fluent-plugin-record-reformer)
+
+Fluentd pluging to add or replace fields of a event record
 
 ## Installation
 
@@ -9,6 +11,8 @@ Use RubyGems:
     gem install fluent-plugin-record-reformer
 
 ## Configuration
+
+Example:
 
     <match foo.**>
       type record_reformer
@@ -35,7 +39,7 @@ reformed {
   "time":"2013-05-01T01:13:14Z",
   "message":"your_hostname bar hello world!",
   "foo":"bar"
- }
+}
 ```
 
 ### Placeholders
