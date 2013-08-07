@@ -24,7 +24,7 @@ module Fluent
     def emit(tag, es, chain)
       tags = tag.split('.')
       es.each { |time, record|
-        Engine.emit(@output_tag, time, expand_record(record, tag, tags, time))
+        Engine.emit(@output_tag, time, replace_record(record, tag, tags, Time.at(time)))
       }
       chain.next
     rescue => e
@@ -34,22 +34,34 @@ module Fluent
 
     private
 
-    def expand_record(record, tag, tags, time)
-      time = Time.at(time)
+    def replace_record(record, tag, tags, time)
       @map.each_pair { |k, v|
-        record[k] = expand(v, record, tag, tags, time)
+        record[k] = expand_placeholder(v, record, tag, tags, time)
       }
       record
     end
 
-    def expand(str, record, tag, tags, time)
-      struct = OpenStruct.new(record)
+    # Replace placeholders in a string
+    #
+    # @param [String] str    the string to be replaced
+    # @param [Hash]   record the record, one of information
+    # @param [String] tag    one of information
+    # @param [Array]  tags   one of information
+    # @param [Time]   time   one of information
+    def expand_placeholder(str, record, tag, tags, time)
+      struct = UndefOpenStruct.new(record)
       struct.tag  = tag
       struct.tags = tags
       struct.time = time
       struct.hostname = @hostname
       str = str.gsub(/\$\{([^}]+)\}/, '#{\1}') # ${..} => #{..}
       eval "\"#{str}\"", struct.instance_eval { binding }
+    end
+
+    class UndefOpenStruct < OpenStruct
+      (Object.instance_methods).each do |m|
+        undef_method m unless m.to_s =~ /^__|respond_to_missing\?|object_id|public_methods|instance_eval|method_missing|define_singleton_method|respond_to\?|new_ostruct_member/
+      end
     end
   end
 end
