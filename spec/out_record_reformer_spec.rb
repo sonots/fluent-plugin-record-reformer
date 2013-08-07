@@ -5,7 +5,7 @@ describe Fluent::RecordReformerOutput do
   before { Fluent::Test.setup }
   CONFIG = %[
     type reformed
-    output_tag reformed
+    output_tag reformed.${tag}
 
     hostname ${hostname}
     tag ${tag}
@@ -23,7 +23,6 @@ describe Fluent::RecordReformerOutput do
 
       context "check default" do
         let(:config) { CONFIG }
-        its(:output_tag) { should == 'reformed' }
       end
     end
   end
@@ -40,14 +39,14 @@ describe Fluent::RecordReformerOutput do
     let(:config) { CONFIG }
     before do
       Fluent::Engine.stub(:now).and_return(time)
-      Fluent::Engine.should_receive(:emit).with("reformed", time.to_i, {
+      Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
         'foo' => 'bar',
         'hostname' => hostname,
         'tag' => tag,
         'time' => time.strftime('%S'),
         'message' => "#{hostname} #{tags.last} 1",
       })
-      Fluent::Engine.should_receive(:emit).with("reformed", time.to_i, {
+      Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
         'foo' => 'bar',
         'hostname' => hostname,
         'tag' => tag,

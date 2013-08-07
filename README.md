@@ -16,7 +16,7 @@ Example:
 
     <match foo.**>
       type record_reformer
-      output_tag reformed
+      output_tag reformed.${tag}
       
       hostname ${hostname}
       tag ${tag}
@@ -33,7 +33,7 @@ foo.bar {"message":"hello world!", "foo":"bar"}
 then output becomes as below (indented):
 
 ```js
-reformed {
+reformed.foo.bar {
   "hostname":"your_hostname", 
   "tag":"foo.bar",
   "time":"2013-05-01T01:13:14Z",

@@ -24,7 +24,9 @@ module Fluent
     def emit(tag, es, chain)
       tags = tag.split('.')
       es.each { |time, record|
-        Engine.emit(@output_tag, time, replace_record(record, tag, tags, Time.at(time)))
+        t_time = Time.at(time)
+        output_tag = expand_placeholder(@output_tag, record, tag, tags, t_time)
+        Engine.emit(output_tag, time, replace_record(record, tag, tags, t_time))
       }
       chain.next
     rescue => e
