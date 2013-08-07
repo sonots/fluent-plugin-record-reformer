@@ -9,6 +9,7 @@ Gem::Specification.new do |gem|
   gem.homepage    = "https://github.com/sonots/fluent-plugin-record-reformer"
   gem.description = "Output filter plugin for reforming each event record"
   gem.summary     = gem.description
+  gem.licenses    = ["MIT"]
   gem.has_rdoc    = false
 
   gem.files       = `git ls-files`.split("\n")
@@ -20,5 +21,4 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "rake"
   gem.add_development_dependency "rspec"
   gem.add_development_dependency "pry"
-  gem.add_development_dependency 'coveralls'
 end

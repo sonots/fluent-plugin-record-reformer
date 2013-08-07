@@ -4,9 +4,6 @@ require 'bundler'
 Bundler.setup(:default, :test)
 Bundler.require(:default, :test)
 
-require 'coveralls'
-Coveralls.wear!
-
 require 'fluent/test'
 require 'rspec'
 require 'pry'

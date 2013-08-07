@@ -1,6 +1,6 @@
 # fluent-plugin-record-reformer
 
-[![Build Status](https://secure.travis-ci.org/sonots/fluent-plugin-record-reformer.png?branch=master)](http://travis-ci.org/sonots/fluent-plugin-record-reformer) [![Dependency Status](https://gemnasium.com/sonots/fluent-plugin-record-reformer.png)](https://gemnasium.com/sonots/fluent-plugin-record-reformer) [![Coverage Status](https://coveralls.io/repos/sonots/fluent-plugin-record-reformer/badge.png?branch=master)](https://coveralls.io/r/sonots/fluent-plugin-record-reformer)
+[![Build Status](https://secure.travis-ci.org/sonots/fluent-plugin-record-reformer.png?branch=master)](http://travis-ci.org/sonots/fluent-plugin-record-reformer) [![Dependency Status](https://gemnasium.com/sonots/fluent-plugin-record-reformer.png)](https://gemnasium.com/sonots/fluent-plugin-record-reformer)
 
 Fluentd pluging to add or replace fields of a event record
 
@@ -67,7 +67,7 @@ Please note that this plugin enables to execute any ruby codes. Do not allow any
 
 ## Relatives
 
-* [fluent-plugin-record-modifier](https://github.com/repeatedly/fluent-plugin-record-modifier)
+* inspired by [fluent-plugin-record-modifier](https://github.com/repeatedly/fluent-plugin-record-modifier)
 
 ## ChangeLog
 

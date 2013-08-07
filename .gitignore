@@ -10,3 +10,4 @@ doc/*
 tmp/*
 coverage
 .yardoc
+pkg/
