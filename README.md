@@ -42,6 +42,8 @@ reformed.foo.bar {
 }
 ```
 
+Note that the keyword `output_tag` is reserved for the output tag. It can not be used as a record key. 
+
 ### Placeholders
 
 The keys of input json are available as placeholders. In the above example, 
@@ -67,7 +69,8 @@ Please note that this plugin enables to execute any ruby codes. Do not allow any
 
 ## Relatives
 
-* inspired by [fluent-plugin-record-modifier](https://github.com/repeatedly/fluent-plugin-record-modifier)
+I created this plugin inspired by [fluent-plugin-record-modifier](https://github.com/repeatedly/fluent-plugin-record-modifier). 
+I chose not to send pull requests because the implementation of this plugin became completely different with it.
 
 ## ChangeLog
 
