@@ -1,3 +1,9 @@
+## 0.1.0 (2013/09/09)
+
+Enhancement:
+
+* require 'pathname', 'uri', 'cgi' to use these utilities in a placeholder
+
 ## 0.0.3 (2013/08/07)
 
 Enhancement:
