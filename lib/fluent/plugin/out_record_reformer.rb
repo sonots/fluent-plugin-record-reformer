@@ -4,6 +4,14 @@ module Fluent
   class RecordReformerOutput < Output
     Fluent::Plugin.register_output('record_reformer', self)
 
+    def initialize
+      super
+      # require utilities for placeholder
+      require 'pathname'
+      require 'uri'
+      require 'cgi'
+    end
+
     config_param :output_tag, :string
 
     BUILTIN_CONFIGURATIONS = %W(type output_tag)
