@@ -61,6 +61,7 @@ shall be available. In addition, following placeholders are reserved:
 It is also possible to write a ruby code in placeholders, so you may write some codes as
 
 * ${time.strftime('%Y-%m-%dT%H:%M:%S%z')}
+* ${tags[0]}
 * ${tags.last}  
 
 ## Notice
