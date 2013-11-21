@@ -21,7 +21,7 @@ Example:
       hostname ${hostname}
       tag ${tag}
       time ${time.strftime('%Y-%m-%dT%H:%M:%S%z')}
-      message ${hostname} ${tags.last} ${message}
+      message ${hostname} ${tag_parts.last} ${message}
     </match>
 
 Assume following input is coming:
@@ -55,14 +55,15 @@ shall be available. In addition, following placeholders are reserved:
 
 * ${hostname} hostname
 * ${tag} input tag
-* ${tags} input tag splitted by '.'
+* ${tags} input tag splitted by '.' (obsolete. use tag_parts)
+* ${tag_parts} input tag splitted by '.'
 * ${time} time of the event
 
 It is also possible to write a ruby code in placeholders, so you may write some codes as
 
 * ${time.strftime('%Y-%m-%dT%H:%M:%S%z')}
-* ${tags[0]}
-* ${tags.last}  
+* ${tag_parts[0]}
+* ${tag_parts.last}
 
 ## Notice
 

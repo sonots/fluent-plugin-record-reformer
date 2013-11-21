@@ -10,10 +10,10 @@ describe Fluent::RecordReformerOutput do
     hostname ${hostname}
     tag ${tag}
     time ${time.strftime('%S')}
-    message ${hostname} ${tags.last} ${message}
+    message ${hostname} ${tag_parts.last} ${message}
   ]
   let(:tag) { 'test.tag' }
-  let(:tags) { tag.split('.') }
+  let(:tag_parts) { tag.split('.') }
   let(:hostname) { Socket.gethostname.chomp }
   let(:driver) { Fluent::Test::OutputTestDriver.new(Fluent::RecordReformerOutput, tag).configure(config) }
 
@@ -36,24 +36,44 @@ describe Fluent::RecordReformerOutput do
       end
     end
 
-    let(:config) { CONFIG }
-    before do
-      Fluent::Engine.stub(:now).and_return(time)
-      Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
-        'foo' => 'bar',
-        'hostname' => hostname,
-        'tag' => tag,
-        'time' => time.strftime('%S'),
-        'message' => "#{hostname} #{tags.last} 1",
-      })
-      Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
-        'foo' => 'bar',
-        'hostname' => hostname,
-        'tag' => tag,
-        'time' => time.strftime('%S'),
-        'message' => "#{hostname} #{tags.last} 2",
-      })
+    context 'typical usage' do
+      let(:config) { CONFIG }
+      before do
+        Fluent::Engine.stub(:now).and_return(time)
+        Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
+          'foo' => 'bar',
+          'hostname' => hostname,
+          'tag' => tag,
+          'time' => time.strftime('%S'),
+          'message' => "#{hostname} #{tag_parts.last} 1",
+        })
+        Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
+          'foo' => 'bar',
+          'hostname' => hostname,
+          'tag' => tag,
+          'time' => time.strftime('%S'),
+          'message' => "#{hostname} #{tag_parts.last} 2",
+        })
+      end
+      it { emit }
     end
-    it { emit }
+
+    context 'support old ${tags} placeholder' do
+      let(:config) { %[
+        type reformed
+        output_tag reformed.${tag}
+
+        message ${tags[1]}
+      ]}
+
+      before do
+        Fluent::Engine.stub(:now).and_return(time)
+        Fluent::Engine.should_receive(:emit).twice.with("reformed.#{tag}", time.to_i, {
+          'foo' => 'bar',
+          'message' => "#{tag_parts[1]}",
+        })
+      end
+      it { emit }
+    end
   end
 end

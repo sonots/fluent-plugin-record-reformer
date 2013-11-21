@@ -30,11 +30,11 @@ module Fluent
     end
 
     def emit(tag, es, chain)
-      tags = tag.split('.')
+      tag_parts = tag.split('.')
       es.each { |time, record|
         t_time = Time.at(time)
-        output_tag = expand_placeholder(@output_tag, record, tag, tags, t_time)
-        Engine.emit(output_tag, time, replace_record(record, tag, tags, t_time))
+        output_tag = expand_placeholder(@output_tag, record, tag, tag_parts, t_time)
+        Engine.emit(output_tag, time, replace_record(record, tag, tag_parts, t_time))
       }
       chain.next
     rescue => e
@@ -44,24 +44,24 @@ module Fluent
 
     private
 
-    def replace_record(record, tag, tags, time)
+    def replace_record(record, tag, tag_parts, time)
       @map.each_pair { |k, v|
-        record[k] = expand_placeholder(v, record, tag, tags, time)
+        record[k] = expand_placeholder(v, record, tag, tag_parts, time)
       }
       record
     end
 
     # Replace placeholders in a string
     #
-    # @param [String] str    the string to be replaced
-    # @param [Hash]   record the record, one of information
-    # @param [String] tag    one of information
-    # @param [Array]  tags   one of information
-    # @param [Time]   time   one of information
-    def expand_placeholder(str, record, tag, tags, time)
+    # @param [String] str         the string to be replaced
+    # @param [Hash]   record      the record, one of information
+    # @param [String] tag         the tag
+    # @param [Array]  tag_parts   the tag parts (tag splitted by .)
+    # @param [Time]   time        the time
+    def expand_placeholder(str, record, tag, tag_parts, time)
       struct = UndefOpenStruct.new(record)
       struct.tag  = tag
-      struct.tags = tags
+      struct.tags = struct.tag_parts = tag_parts # tags is for old version compatibility
       struct.time = time
       struct.hostname = @hostname
       str = str.gsub(/\$\{([^}]+)\}/, '#{\1}') # ${..} => #{..}
