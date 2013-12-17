@@ -1,6 +1,6 @@
 # fluent-plugin-record-reformer
 
-[![Build Status](https://secure.travis-ci.org/sonots/fluent-plugin-record-reformer.png?branch=master)](http://travis-ci.org/sonots/fluent-plugin-record-reformer) [![Dependency Status](https://gemnasium.com/sonots/fluent-plugin-record-reformer.png)](https://gemnasium.com/sonots/fluent-plugin-record-reformer)
+[![Build Status](https://secure.travis-ci.org/sonots/fluent-plugin-record-reformer.png?branch=master)](http://travis-ci.org/sonots/fluent-plugin-record-reformer)
 
 Fluentd pluging to add or replace fields of a event record
 
