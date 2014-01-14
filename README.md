@@ -18,10 +18,12 @@ Example:
       type record_reformer
       output_tag reformed.${tag}
       
-      hostname ${hostname}
-      tag ${tag}
-      time ${time.strftime('%Y-%m-%dT%H:%M:%S%z')}
-      message ${hostname} ${tag_parts.last} ${message}
+      <record>
+        hostname ${hostname}
+        tag ${tag}
+        time ${time.strftime('%Y-%m-%dT%H:%M:%S%z')}
+        message ${hostname} ${tag_parts.last} ${message}
+      </record>
     </match>
 
 Assume following input is coming:
@@ -42,9 +44,29 @@ reformed.foo.bar {
 }
 ```
 
-Note that the keyword `output_tag` is reserved for the output tag. It can not be used as a record key. 
+## Configuration (Classic Style)
 
-### Placeholders
+Example:
+
+    <match foo.**>
+      type record_reformer
+      output_tag reformed.${tag}
+      
+      hostname ${hostname}
+      tag ${tag}
+      time ${time.strftime('%Y-%m-%dT%H:%M:%S%z')}
+      message ${hostname} ${tag_parts.last} ${message}
+    </match>
+
+This results in same, but please note that following option parameters are reserved, and can not be used as a record key.
+
+## Parameters
+
+- output_tag
+
+    The output tag name
+
+## Placeholders
 
 The keys of input json are available as placeholders. In the above example, 
 

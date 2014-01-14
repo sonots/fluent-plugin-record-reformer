@@ -22,8 +22,15 @@ module Fluent
       @map = {}
       conf.each_pair { |k, v|
         next if BUILTIN_CONFIGURATIONS.include?(k)
-        conf.has_key?(k)
+        conf.has_key?(k) # to suppress unread configuration warning
         @map[k] = v
+      }
+      # <record></record> directive
+      conf.elements.select { |element| element.name == 'record' }.each { |element|
+        element.each_pair { |k, v|
+          element.has_key?(k) # to suppress unread configuration warning
+          @map[k] = v
+        }
       }
 
       @hostname = Socket.gethostname
@@ -38,8 +45,7 @@ module Fluent
       }
       chain.next
     rescue => e
-      $log.warn e.message
-      $log.warn e.backtrace.join(', ')
+      $log.warn "record_reformer: #{e.class} #{e.message} #{e.backtrace.join(', ')}"
     end
 
     private

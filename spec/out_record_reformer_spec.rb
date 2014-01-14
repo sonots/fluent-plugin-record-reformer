@@ -75,5 +75,38 @@ describe Fluent::RecordReformerOutput do
       end
       it { emit }
     end
+
+    context 'record directive' do
+      let(:config) {%[
+        type reformed
+        output_tag reformed.${tag}
+
+        <record>
+        hostname ${hostname}
+        output_tag ${tag}
+        time ${time.strftime('%S')}
+        message ${hostname} ${tag_parts.last} ${message}
+        </record>
+      ]}
+      before do
+        Fluent::Engine.stub(:now).and_return(time)
+        Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
+          'foo' => 'bar',
+          'hostname' => hostname,
+          'output_tag' => tag,
+          'time' => time.strftime('%S'),
+          'message' => "#{hostname} #{tag_parts.last} 1",
+        })
+        Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
+          'foo' => 'bar',
+          'hostname' => hostname,
+          'output_tag' => tag,
+          'time' => time.strftime('%S'),
+          'message' => "#{hostname} #{tag_parts.last} 2",
+        })
+      end
+      it { emit }
+    end
+
   end
 end
