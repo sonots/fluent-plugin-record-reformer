@@ -108,5 +108,23 @@ describe Fluent::RecordReformerOutput do
       it { emit }
     end
 
+    context 'remove_keys' do
+      let(:config) { CONFIG + %[remove_keys foo,message] }
+      before do
+        Fluent::Engine.stub(:now).and_return(time)
+        Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
+          'hostname' => hostname,
+          'tag' => tag,
+          'time' => time.strftime('%S'),
+        })
+        Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
+          'hostname' => hostname,
+          'tag' => tag,
+          'time' => time.strftime('%S'),
+        })
+      end
+      it { emit }
+    end
+
   end
 end

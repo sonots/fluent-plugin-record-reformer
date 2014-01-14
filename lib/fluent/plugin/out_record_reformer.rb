@@ -13,8 +13,9 @@ module Fluent
     end
 
     config_param :output_tag, :string
+    config_param :remove_keys, :string, :default => nil
 
-    BUILTIN_CONFIGURATIONS = %W(type output_tag)
+    BUILTIN_CONFIGURATIONS = %W(type output_tag remove_keys)
 
     def configure(conf)
       super
@@ -32,6 +33,10 @@ module Fluent
           @map[k] = v
         }
       }
+
+      if @remove_keys
+        @remove_keys = @remove_keys.split(',')
+      end
 
       @hostname = Socket.gethostname
     end
@@ -54,6 +59,7 @@ module Fluent
       @map.each_pair { |k, v|
         record[k] = expand_placeholder(v, record, tag, tag_parts, time)
       }
+      @remove_keys.each { |k| record.delete(k) } if @remove_keys
       record
     end
 

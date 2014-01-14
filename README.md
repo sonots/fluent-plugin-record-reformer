@@ -66,6 +66,12 @@ This results in same, but please note that following option parameters are reser
 
     The output tag name
 
+- remove_keys
+
+    Specify record keys to remove by a string separated by , (comma) like
+
+        remove_keys message,foo
+
 ## Placeholders
 
 The keys of input json are available as placeholders. In the above example, 
