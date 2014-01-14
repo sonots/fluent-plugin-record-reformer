@@ -82,10 +82,10 @@ describe Fluent::RecordReformerOutput do
         output_tag reformed.${tag}
 
         <record>
-        hostname ${hostname}
-        output_tag ${tag}
-        time ${time.strftime('%S')}
-        message ${hostname} ${tag_parts.last} ${message}
+          hostname ${hostname}
+          output_tag ${tag}
+          time ${time.strftime('%S')}
+          message ${hostname} ${tag_parts.last} ${message}
         </record>
       ]}
       before do
@@ -140,6 +140,37 @@ describe Fluent::RecordReformerOutput do
           'hostname' => hostname,
           'tag' => tag,
           'time' => time.strftime('%S'),
+          'message' => "#{hostname} #{tag_parts.last} 2",
+        })
+      end
+      it { emit }
+    end
+
+    context 'enable_ruby no' do
+      let(:config) {%[
+        type reformed
+        output_tag reformed.${tag}
+        enable_ruby no
+
+        hostname ${hostname}
+        tag ${tag}
+        time ${time}
+        message ${hostname} ${tag_parts[-1]} ${message}
+      ]}
+      before do
+        Fluent::Engine.stub(:now).and_return(time)
+        Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
+          'foo' => 'bar',
+          'hostname' => hostname,
+          'tag' => tag,
+          'time' => time.to_i.to_s, # hmm, want to remove ${time} placeholder
+          'message' => "#{hostname} #{tag_parts.last} 1",
+        })
+        Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
+          'foo' => 'bar',
+          'hostname' => hostname,
+          'tag' => tag,
+          'time' => time.to_i.to_s, # hmm, want to remove ${time} placeholder
           'message' => "#{hostname} #{tag_parts.last} 2",
         })
       end

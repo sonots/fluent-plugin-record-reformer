@@ -17,30 +17,30 @@ Example:
     <match foo.**>
       type record_reformer
       output_tag reformed.${tag}
-      remove_keys foo
+      remove_keys remove_me
       renew_record false
+      enable_ruby false
       
       <record>
         hostname ${hostname}
-        tag ${tag}
-        time ${time.strftime('%Y-%m-%dT%H:%M:%S%z')}
-        message ${hostname} ${tag_parts.last} ${message}
+        input_tag ${tag}
+        message ${hostname} ${tag_parts[-1]} ${message}
       </record>
     </match>
 
 Assume following input is coming:
 
 ```js
-foo.bar {"message":"hello world!", "foo":"bar"}
+foo.bar {"message":"hello world!", "foo":"bar", "remove_me":"bar"}
 ```
 
 then output becomes as below (indented):
 
 ```js
 reformed.foo.bar {
+  "foo":"bar",
   "hostname":"your_hostname", 
-  "tag":"foo.bar",
-  "time":"2013-05-01T01:13:14Z",
+  "input_tag":"foo.bar",
   "message":"your_hostname bar hello world!",
 }
 ```
@@ -52,13 +52,13 @@ Example:
     <match foo.**>
       type record_reformer
       output_tag reformed.${tag}
-      remove_keys foo
+      remove_keys remove_me
       renew_record false
+      enable_ruby false
       
       hostname ${hostname}
-      tag ${tag}
-      time ${time.strftime('%Y-%m-%dT%H:%M:%S%z')}
-      message ${hostname} ${tag_parts.last} ${message}
+      input_tag ${tag}
+      message ${hostname} ${tag_parts[-1]} ${message}
     </match>
 
 This results in same, but please note that following option parameters are reserved, and can not be used as a record key.
@@ -71,22 +71,18 @@ This results in same, but please note that following option parameters are reser
 
 - remove_keys
 
-    Specify record keys to remove by a string separated by , (comma) like
+    Specify record keys to be removed by a string separated by , (comma) like
 
         remove_keys message,foo
 
 - renew_record *bool*
 
-<<<<<<< HEAD
-    The output record extends the input record, and configuration overrides the record fields. Default is `true`. 
-=======
     Set to `true` if you do not want to extend (or merge) the input record fields. Default is `false`.
 
 - enable_ruby *bool*
 
     Enable to use ruby codes in placeholders. See `Placeholders` section.
     Default is `true` (just for lower version compatibility). 
->>>>>>> bb95db6... Update REAME
 
 ## Placeholders
 
@@ -99,19 +95,16 @@ shall be available. In addition, following placeholders are reserved:
 
 * ${hostname} hostname
 * ${tag} input tag
-* ${tags} input tag splitted by '.' (obsolete. use tag_parts)
-* ${tag_parts} input tag splitted by '.'
 * ${time} time of the event
+* ${tags[N]} input tag splitted by '.' (obsolete. use tag\_parts)
+* ${tag\_parts[N]} input tag splitted by '.' indexed with N such as `${tag_parts[0]}`, `${tag_parts[-1]}`. 
 
-It is also possible to write a ruby code in placeholders, so you may write some codes as
+It is also possible to write a ruby code in placeholders if you set `enable_ruby true` option, so you may write some codes as
 
 * ${time.strftime('%Y-%m-%dT%H:%M:%S%z')}
-* ${tag_parts[0]}
-* ${tag_parts.last}
+* ${tag\_parts.last}
 
-## Notice
-
-Please note that this plugin enables to execute any ruby codes. Do not allow anyone to write fluentd configuration from outside of your system by security reasons.
+but, please note that enabling ruby codes is not encouraged by security reasons and also in terms of the performance.
 
 ## Relatives
 
