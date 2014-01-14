@@ -14,8 +14,9 @@ module Fluent
 
     config_param :output_tag, :string
     config_param :remove_keys, :string, :default => nil
+    config_param :renew_record, :bool, :default => false
 
-    BUILTIN_CONFIGURATIONS = %W(type output_tag remove_keys)
+    BUILTIN_CONFIGURATIONS = %W(type output_tag remove_keys renew_record)
 
     def configure(conf)
       super
@@ -56,11 +57,12 @@ module Fluent
     private
 
     def replace_record(record, tag, tag_parts, time)
+      new_record = @renew_record ? {} : record.dup
       @map.each_pair { |k, v|
-        record[k] = expand_placeholder(v, record, tag, tag_parts, time)
+        new_record[k] = expand_placeholder(v, record, tag, tag_parts, time)
       }
-      @remove_keys.each { |k| record.delete(k) } if @remove_keys
-      record
+      @remove_keys.each { |k| new_record.delete(k) } if @remove_keys
+      new_record
     end
 
     # Replace placeholders in a string

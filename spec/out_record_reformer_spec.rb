@@ -126,5 +126,24 @@ describe Fluent::RecordReformerOutput do
       it { emit }
     end
 
+    context 'renew_record true' do
+      let(:config) { CONFIG + %[renew_record true] }
+      before do
+        Fluent::Engine.stub(:now).and_return(time)
+        Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
+          'hostname' => hostname,
+          'tag' => tag,
+          'time' => time.strftime('%S'),
+          'message' => "#{hostname} #{tag_parts.last} 1",
+        })
+        Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
+          'hostname' => hostname,
+          'tag' => tag,
+          'time' => time.strftime('%S'),
+          'message' => "#{hostname} #{tag_parts.last} 2",
+        })
+      end
+      it { emit }
+    end
   end
 end

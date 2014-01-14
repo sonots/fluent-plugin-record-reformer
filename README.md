@@ -17,6 +17,8 @@ Example:
     <match foo.**>
       type record_reformer
       output_tag reformed.${tag}
+      remove_keys foo
+      renew_record false
       
       <record>
         hostname ${hostname}
@@ -40,7 +42,6 @@ reformed.foo.bar {
   "tag":"foo.bar",
   "time":"2013-05-01T01:13:14Z",
   "message":"your_hostname bar hello world!",
-  "foo":"bar"
 }
 ```
 
@@ -51,6 +52,8 @@ Example:
     <match foo.**>
       type record_reformer
       output_tag reformed.${tag}
+      remove_keys foo
+      renew_record false
       
       hostname ${hostname}
       tag ${tag}
@@ -71,6 +74,19 @@ This results in same, but please note that following option parameters are reser
     Specify record keys to remove by a string separated by , (comma) like
 
         remove_keys message,foo
+
+- renew_record *bool*
+
+<<<<<<< HEAD
+    The output record extends the input record, and configuration overrides the record fields. Default is `true`. 
+=======
+    Set to `true` if you do not want to extend (or merge) the input record fields. Default is `false`.
+
+- enable_ruby *bool*
+
+    Enable to use ruby codes in placeholders. See `Placeholders` section.
+    Default is `true` (just for lower version compatibility). 
+>>>>>>> bb95db6... Update REAME
 
 ## Placeholders
 
