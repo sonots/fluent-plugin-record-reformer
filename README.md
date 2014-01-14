@@ -16,22 +16,26 @@ Example:
 
     <match foo.**>
       type record_reformer
-      output_tag reformed.${tag}
       remove_keys remove_me
       renew_record false
       enable_ruby false
       
+      output_tag reformed.${tag}
       <record>
         hostname ${hostname}
         input_tag ${tag}
-        message ${hostname} ${tag_parts[-1]} ${message}
+        message ${message}, ${tag_parts[-1]}
       </record>
     </match>
 
-Assume following input is coming:
+Assume following input is coming (indented):
 
 ```js
-foo.bar {"message":"hello world!", "foo":"bar", "remove_me":"bar"}
+foo.bar {
+  "remove_me":"bar",
+  "foo":"bar",
+  "message":"Hello world!"
+}
 ```
 
 then output becomes as below (indented):
@@ -39,9 +43,9 @@ then output becomes as below (indented):
 ```js
 reformed.foo.bar {
   "foo":"bar",
-  "hostname":"your_hostname", 
+  "hostname":"YOUR_HOSTNAME",
   "input_tag":"foo.bar",
-  "message":"your_hostname bar hello world!",
+  "message":"Hello world!, bar",
 }
 ```
 
@@ -51,17 +55,17 @@ Example:
 
     <match foo.**>
       type record_reformer
-      output_tag reformed.${tag}
       remove_keys remove_me
       renew_record false
       enable_ruby false
+      output_tag reformed.${tag}
       
       hostname ${hostname}
       input_tag ${tag}
-      message ${hostname} ${tag_parts[-1]} ${message}
+      message ${message}, ${tag_parts[-1]}
     </match>
 
-This results in same, but please note that following option parameters are reserved, and can not be used as a record key.
+This results in same, but please note that following option parameters are reserved, so can not be used as a record key.
 
 ## Parameters
 
@@ -90,6 +94,7 @@ The keys of input json are available as placeholders. In the above example,
 
 * ${foo}
 * ${message}
+* ${remove_me}
 
 shall be available. In addition, following placeholders are reserved: 
 
@@ -108,8 +113,11 @@ but, please note that enabling ruby codes is not encouraged by security reasons 
 
 ## Relatives
 
-I created this plugin inspired by [fluent-plugin-record-modifier](https://github.com/repeatedly/fluent-plugin-record-modifier). 
-I chose not to send pull requests because the implementation of this plugin became completely different with it.
+Following plugins look similar:
+
+* [fluent-plugin-record-modifier](https://github.com/repeatedly/fluent-plugin-record-modifier)
+* [fluent-plugin-format](https://github.com/mach/fluent-plugin-format)
+* [fluent-plugin-add](https://github.com/yu-yamada/fluent-plugin-add)
 
 ## ChangeLog
 
