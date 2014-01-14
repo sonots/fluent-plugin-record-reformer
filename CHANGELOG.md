@@ -1,3 +1,12 @@
+## 0.2.0 (2014/01/15)
+
+Enhancement:
+
+* Support a record directive
+* Add `remove_keys` option
+* Add `extends` option
+* Add `enable_ruby` option
+
 ## 0.1.1 (2013/11/21)
 
 Changes:
