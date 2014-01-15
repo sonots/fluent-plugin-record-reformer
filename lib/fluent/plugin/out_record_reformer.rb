@@ -40,11 +40,11 @@ module Fluent
         @remove_keys = @remove_keys.split(',')
       end
 
-      @expand_placeholder_proc =
+      @placeholder_expander =
         if @enable_ruby
-          Proc.new {|str, record, tag, tag_parts, time| expand_ruby_placeholder(str, record, tag, tag_parts, time) }
+          RubyPlaceholderExpander.new
         else
-          Proc.new {|str, record, tag, tag_parts, time| expand_placeholder(str, record, tag, tag_parts, time) }
+          PlaceholderExpander.new
         end
 
       @time_proc = # hmm, want to remove ${time} placeholder ...
@@ -60,9 +60,8 @@ module Fluent
     def emit(tag, es, chain)
       tag_parts = tag.split('.')
       es.each { |time, record|
-        t_time = @time_proc.call(time)
-        output_tag = @expand_placeholder_proc.call(@output_tag, record, tag, tag_parts, t_time)
-        Engine.emit(output_tag, time, replace_record(record, tag, tag_parts, t_time))
+        new_tag, new_record = reform(@output_tag, record, tag, tag_parts, @time_proc.call(time))
+        Engine.emit(new_tag, time, new_record)
       }
       chain.next
     rescue => e
@@ -71,69 +70,85 @@ module Fluent
 
     private
 
-    def replace_record(record, tag, tag_parts, time)
+    def reform(output_tag, record, tag, tag_parts, time)
+      @placeholder_expander.prepare_placeholders(record, tag, tag_parts, @hostname, time)
+      new_tag = @placeholder_expander.expand(output_tag)
+
       new_record = @renew_record ? {} : record.dup
-      @map.each_pair { |k, v|
-        new_record[k] = @expand_placeholder_proc.call(v, record, tag, tag_parts, time)
-      }
+      @map.each_pair { |k, v| new_record[k] = @placeholder_expander.expand(v) }
       @remove_keys.each { |k| new_record.delete(k) } if @remove_keys
-      new_record
+
+      [new_tag, new_record]
     end
 
-    def expand_placeholder(str, record, tag, tag_parts, time)
+    class PlaceholderExpander
       # referenced https://github.com/fluent/fluent-plugin-rewrite-tag-filter, thanks!
-      placeholders = get_placeholders(record, tag, tag_parts, time)
-      str.gsub(/(\${[a-z_]+(\[-?[0-9]+\])?}|__[A-Z_]+__)/) do
-        $log.warn "record_reformer: unknown placeholder `#{$1}` found in a tag `#{tag}`" unless placeholders.include?($1)
-        placeholders[$1]
+      attr_reader :placeholders
+
+      def prepare_placeholders(record, tag, tag_parts, hostname, time)
+        placeholders = {
+          '${time}' => time,
+          '${tag}' => tag,
+          '${hostname}' => hostname,
+        }
+
+        size = tag_parts.size
+        tag_parts.each_with_index do |t, idx|
+          placeholders.store("${tag_parts[#{idx}]}", t)
+          placeholders.store("${tag_parts[#{idx-size}]}", t) # support tag_parts[-1]
+        end
+        # tags is just for old version compatibility
+        tag_parts.each_with_index do |t, idx|
+          placeholders.store("${tags[#{idx}]}", t)
+          placeholders.store("${tags[#{idx-size}]}", t) # support tags[-1]
+        end
+
+        record.each {|k, v|
+          placeholders.store("${#{k}}", v)
+        }
+
+        @placeholders = placeholders
+      end
+
+      def expand(str)
+        str.gsub(/(\${[a-z_]+(\[-?[0-9]+\])?}|__[A-Z_]+__)/) do
+          $log.warn "record_reformer: unknown placeholder `#{$1}` found in a tag `#{tag}`" unless @placeholders.include?($1)
+          @placeholders[$1]
+        end
       end
     end
 
-    def get_placeholders(record, tag, tag_parts, time)
-      placeholders = {
-        '${time}' => time,
-        '${tag}' => tag,
-        '${hostname}' => @hostname,
-      }
+    class RubyPlaceholderExpander
+      attr_reader :placeholders
 
-      size = tag_parts.size
-      tag_parts.each_with_index do |t, idx|
-        placeholders.store("${tag_parts[#{idx}]}", t)
-        placeholders.store("${tag_parts[#{idx-size}]}", t) # support tag_parts[-1]
+      # Get placeholders as a struct
+      #
+      # @param [Hash]   record      the record, one of information
+      # @param [String] tag         the tag
+      # @param [Array]  tag_parts   the tag parts (tag splitted by .)
+      # @param [String] hostname    the hostname
+      # @param [Time]   time        the time
+      def prepare_placeholders(record, tag, tag_parts, hostname, time)
+        struct = UndefOpenStruct.new(record)
+        struct.tag  = tag
+        struct.tags = struct.tag_parts = tag_parts # tags is for old version compatibility
+        struct.time = time
+        struct.hostname = hostname
+        @placeholders = struct
       end
-      # tags is just for old version compatibility
-      tag_parts.each_with_index do |t, idx|
-        placeholders.store("${tags[#{idx}]}", t)
-        placeholders.store("${tags[#{idx-size}]}", t) # support tags[-1]
+
+      # Replace placeholders in a string
+      #
+      # @param [String] str         the string to be replaced
+      def expand(str)
+        str = str.gsub(/\$\{([^}]+)\}/, '#{\1}') # ${..} => #{..}
+        eval "\"#{str}\"", @placeholders.instance_eval { binding }
       end
 
-      record.each {|k, v|
-        placeholders.store("${#{k}}", v)
-      }
-
-      return placeholders
-    end
-
-    # Replace placeholders in a string
-    #
-    # @param [String] str         the string to be replaced
-    # @param [Hash]   record      the record, one of information
-    # @param [String] tag         the tag
-    # @param [Array]  tag_parts   the tag parts (tag splitted by .)
-    # @param [Time]   time        the time
-    def expand_ruby_placeholder(str, record, tag, tag_parts, time)
-      struct = UndefOpenStruct.new(record)
-      struct.tag  = tag
-      struct.tags = struct.tag_parts = tag_parts # tags is for old version compatibility
-      struct.time = time
-      struct.hostname = @hostname
-      str = str.gsub(/\$\{([^}]+)\}/, '#{\1}') # ${..} => #{..}
-      eval "\"#{str}\"", struct.instance_eval { binding }
-    end
-
-    class UndefOpenStruct < OpenStruct
-      (Object.instance_methods).each do |m|
-        undef_method m unless m.to_s =~ /^__|respond_to_missing\?|object_id|public_methods|instance_eval|method_missing|define_singleton_method|respond_to\?|new_ostruct_member/
+      class UndefOpenStruct < OpenStruct
+        (Object.instance_methods).each do |m|
+          undef_method m unless m.to_s =~ /^__|respond_to_missing\?|object_id|public_methods|instance_eval|method_missing|define_singleton_method|respond_to\?|new_ostruct_member/
+        end
       end
     end
   end
