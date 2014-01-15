@@ -2,9 +2,9 @@
 
 Enhancement:
 
-* Support a record directive
+* Support a `record` directive
 * Add `remove_keys` option
-* Add `extends` option
+* Add `renew_record` option
 * Add `enable_ruby` option
 
 ## 0.1.1 (2013/11/21)
