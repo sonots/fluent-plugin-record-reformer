@@ -1,3 +1,9 @@
+## 0.2.1 (2014/01/15)
+
+Enhancement:
+
+* Speed up
+
 ## 0.2.0 (2014/01/15)
 
 Enhancement:
