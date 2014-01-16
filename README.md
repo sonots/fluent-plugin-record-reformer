@@ -67,7 +67,7 @@ Example:
 
 This results in same, but please note that following option parameters are reserved, so can not be used as a record key.
 
-## Parameters
+## Option Parameters
 
 - output_tag
 

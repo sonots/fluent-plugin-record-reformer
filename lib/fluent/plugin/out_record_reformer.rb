@@ -6,10 +6,6 @@ module Fluent
 
     def initialize
       super
-      # require utilities for placeholder
-      require 'pathname'
-      require 'uri'
-      require 'cgi'
     end
 
     config_param :output_tag, :string
@@ -42,6 +38,10 @@ module Fluent
 
       @placeholder_expander =
         if @enable_ruby
+          # require utilities which would be used in ruby placeholders
+          require 'pathname'
+          require 'uri'
+          require 'cgi'
           RubyPlaceholderExpander.new
         else
           PlaceholderExpander.new
@@ -93,17 +93,17 @@ module Fluent
         }
 
         size = tag_parts.size
-        tag_parts.each_with_index do |t, idx|
+        tag_parts.each_with_index { |t, idx|
           placeholders.store("${tag_parts[#{idx}]}", t)
           placeholders.store("${tag_parts[#{idx-size}]}", t) # support tag_parts[-1]
-        end
+        }
         # tags is just for old version compatibility
-        tag_parts.each_with_index do |t, idx|
+        tag_parts.each_with_index { |t, idx|
           placeholders.store("${tags[#{idx}]}", t)
           placeholders.store("${tags[#{idx-size}]}", t) # support tags[-1]
-        end
+        }
 
-        record.each {|k, v|
+        record.each { |k, v|
           placeholders.store("${#{k}}", v)
         }
 
@@ -111,10 +111,10 @@ module Fluent
       end
 
       def expand(str)
-        str.gsub(/(\${[a-z_]+(\[-?[0-9]+\])?}|__[A-Z_]+__)/) do
+        str.gsub(/(\${[a-z_]+(\[-?[0-9]+\])?}|__[A-Z_]+__)/) {
           $log.warn "record_reformer: unknown placeholder `#{$1}` found in a tag `#{tag}`" unless @placeholders.include?($1)
           @placeholders[$1]
-        end
+        }
       end
     end
 

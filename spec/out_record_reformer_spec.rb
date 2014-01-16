@@ -10,7 +10,7 @@ describe Fluent::RecordReformerOutput do
     hostname ${hostname}
     tag ${tag}
     time ${time.strftime('%S')}
-    message ${hostname} ${tag_parts.last} ${message}
+    message ${hostname} ${tag_parts.last} ${URI.escape(message)}
   ]
   let(:tag) { 'test.tag' }
   let(:tag_parts) { tag.split('.') }
@@ -31,8 +31,8 @@ describe Fluent::RecordReformerOutput do
     let(:time) { Time.now }
     let(:emit) do
       driver.run do
-        driver.emit({'foo'=>'bar', 'message' => 1}, time.to_i)
-        driver.emit({'foo'=>'bar', 'message' => 2}, time.to_i)
+        driver.emit({'foo'=>'bar', 'message' => '1'}, time.to_i)
+        driver.emit({'foo'=>'bar', 'message' => '2'}, time.to_i)
       end
     end
 
