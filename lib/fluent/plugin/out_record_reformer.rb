@@ -93,14 +93,26 @@ module Fluent
         }
 
         size = tag_parts.size
+        tag_prefix = nil
+        tag_suffix = nil
+
         tag_parts.each_with_index { |t, idx|
           placeholders.store("${tag_parts[#{idx}]}", t)
           placeholders.store("${tag_parts[#{idx-size}]}", t) # support tag_parts[-1]
-        }
-        # tags is just for old version compatibility
-        tag_parts.each_with_index { |t, idx|
+
+          tag_prefix = tag_prefix ? (tag_prefix + '.' + t) : t
+          placeholders.store("${tag_prefix[#{idx+1}]}", tag_prefix)
+          placeholders.store("${tag_prefix[#{idx-size+1}]}", tag_prefix) # support tag_prefix[-1]
+
+          # tags is just for old version compatibility
           placeholders.store("${tags[#{idx}]}", t)
           placeholders.store("${tags[#{idx-size}]}", t) # support tags[-1]
+        }
+
+        tag_parts.reverse.each_with_index { |t, idx|
+          tag_suffix = tag_suffix ? (t + '.' + tag_suffix) : t
+          placeholders.store("${tag_suffix[#{idx+1}]}", tag_suffix)
+          placeholders.store("${tag_suffix[#{idx-size+1}]}", tag_suffix) # support tag_suffix[-1]
         }
 
         record.each { |k, v|
