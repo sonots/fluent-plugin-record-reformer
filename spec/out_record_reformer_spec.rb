@@ -163,14 +163,14 @@ describe Fluent::RecordReformerOutput do
           'foo' => 'bar',
           'hostname' => hostname,
           'tag' => tag,
-          'time' => time.to_i.to_s, # hmm, want to remove ${time} placeholder
+          'time' => time.to_s,
           'message' => "#{hostname} #{tag_parts.last} 1",
         })
         Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
           'foo' => 'bar',
           'hostname' => hostname,
           'tag' => tag,
-          'time' => time.to_i.to_s, # hmm, want to remove ${time} placeholder
+          'time' => time.to_s,
           'message' => "#{hostname} #{tag_parts.last} 2",
         })
       end
@@ -197,14 +197,14 @@ describe Fluent::RecordReformerOutput do
           'message' => "prefix.test prefix.test.tag tag.suffix test.tag.suffix 1",
           'hostname' => hostname,
           'tag' => tag,
-          'time' => time.to_i.to_s, # hmm, want to remove ${time} placeholder
+          'time' => time.to_s,
         })
         Fluent::Engine.should_receive(:emit).with("tag.suffix", time.to_i, {
           'foo' => 'bar',
           'message' => "prefix.test prefix.test.tag tag.suffix test.tag.suffix 2",
           'hostname' => hostname,
           'tag' => tag,
-          'time' => time.to_i.to_s, # hmm, want to remove ${time} placeholder
+          'time' => time.to_s,
         })
       end
       it { emit }

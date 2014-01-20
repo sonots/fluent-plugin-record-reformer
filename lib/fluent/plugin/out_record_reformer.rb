@@ -47,13 +47,6 @@ module Fluent
           PlaceholderExpander.new
         end
 
-      @time_proc = # hmm, want to remove ${time} placeholder ...
-        if @enable_ruby
-          Proc.new {|time| Time.at(time) }
-        else
-          Proc.new {|time| time }
-        end
-
       @hostname = Socket.gethostname
     end
 
@@ -62,7 +55,7 @@ module Fluent
       tag_prefix = tag_prefix(tag_parts)
       tag_suffix = tag_suffix(tag_parts)
       es.each { |time, record|
-        new_tag, new_record = reform(@output_tag, record, tag, tag_parts, tag_prefix, tag_suffix, @time_proc.call(time))
+        new_tag, new_record = reform(@output_tag, record, tag, tag_parts, tag_prefix, tag_suffix, Time.at(time))
         Engine.emit(new_tag, time, new_record)
       }
       chain.next
@@ -108,7 +101,7 @@ module Fluent
 
       def prepare_placeholders(record, tag, tag_parts, tag_prefix, tag_suffix, hostname, time)
         placeholders = {
-          '${time}' => time,
+          '${time}' => time.to_s,
           '${tag}' => tag,
           '${hostname}' => hostname,
         }
