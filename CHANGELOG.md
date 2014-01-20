@@ -1,3 +1,9 @@
+## 0.2.2 (2014/01/20)
+
+Enhancement:
+
+* Add `tag_prefix` and `tag_suffix` placeholders. Thanks to [xthexder](https://github.com/xthexder). 
+
 ## 0.2.1 (2014/01/15)
 
 Enhancement:
