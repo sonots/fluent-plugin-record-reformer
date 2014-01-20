@@ -98,11 +98,28 @@ The keys of input json are available as placeholders. In the above example,
 
 shall be available. In addition, following placeholders are reserved: 
 
-* ${hostname} hostname
-* ${tag} input tag
-* ${time} time of the event
-* ${tags[N]} input tag splitted by '.' (obsolete. use tag\_parts)
-* ${tag\_parts[N]} input tag splitted by '.' indexed with N such as `${tag_parts[0]}`, `${tag_parts[-1]}`. 
+* ${hostname} Hostname of the running machine
+* ${tag} Input tag
+* ${time} Time of the event
+* ${tags[N]} (Obsolete. Use tag\_parts) Input tag splitted by '.'
+* ${tag\_parts[N]} Input tag splitted by '.' indexed with N such as `${tag_parts[0]}`, `${tag_parts[-1]}`. 
+* ${tag\_prefix[N]} Tag parts before and on the index N. For example,
+
+        Input tag: prefix.test.tag.suffix
+        
+        ${tag_prefix[0]}  => prefix
+        ${tag_prefix[1]}  => prefix.test
+        ${tag_prefix[-2]} => prefix.test.tag
+        ${tag_prefix[-1]} => prefix.test.tag.suffix
+
+* ${tag\_suffix[N]} Tag parts after and on the index N. For example,
+
+        Input tag: prefix.test.tag.suffix
+    
+        ${tag_suffix[0]}  => prefix.test.tag.suffix
+        ${tag_suffix[1]}  => test.tag.suffix
+        ${tag_suffix[-2]} => tag.suffix
+        ${tag_suffix[-1]} => suffix
 
 It is also possible to write a ruby code in placeholders if you set `enable_ruby true` option, so you may write some codes as
 
