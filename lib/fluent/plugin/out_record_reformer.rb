@@ -93,14 +93,26 @@ module Fluent
         }
 
         size = tag_parts.size
+        tag_prefix = nil
+        tag_suffix = nil
+
         tag_parts.each_with_index { |t, idx|
           placeholders.store("${tag_parts[#{idx}]}", t)
           placeholders.store("${tag_parts[#{idx-size}]}", t) # support tag_parts[-1]
-        }
-        # tags is just for old version compatibility
-        tag_parts.each_with_index { |t, idx|
+
+          tag_prefix = tag_prefix ? (tag_prefix + '.' + t) : t
+          placeholders.store("${tag_prefix[#{idx}]}", tag_prefix)
+          placeholders.store("${tag_prefix[#{idx-size}]}", tag_prefix) # support tag_prefix[-1]
+
+          # tags is just for old version compatibility
           placeholders.store("${tags[#{idx}]}", t)
           placeholders.store("${tags[#{idx-size}]}", t) # support tags[-1]
+        }
+
+        tag_parts.reverse.each_with_index { |t, idx| # idx is reversed in this loop
+          tag_suffix = tag_suffix ? (t + '.' + tag_suffix) : t
+          placeholders.store("${tag_suffix[#{size-idx-1}]}", tag_suffix)
+          placeholders.store("${tag_suffix[#{-idx-1}]}", tag_suffix) # support tag_suffix[-1]
         }
 
         record.each { |k, v|
@@ -129,9 +141,26 @@ module Fluent
       # @param [String] hostname    the hostname
       # @param [Time]   time        the time
       def prepare_placeholders(record, tag, tag_parts, hostname, time)
+        tag_prefix = []
+        tag_suffix = []
+        tmp_tag_prefix = nil
+        tmp_tag_suffix = nil
+
+        tag_parts.each { |t|
+          tmp_tag_prefix = tmp_tag_prefix ? (tmp_tag_prefix + '.' + t) : t
+          tag_prefix << tmp_tag_prefix
+        }
+
+        tag_parts.reverse.each { |t|
+          tmp_tag_suffix = tmp_tag_suffix ? (t + '.' + tmp_tag_suffix) : t
+          tag_suffix << tmp_tag_suffix
+        }
+
         struct = UndefOpenStruct.new(record)
         struct.tag  = tag
         struct.tags = struct.tag_parts = tag_parts # tags is for old version compatibility
+        struct.tag_prefix = tag_prefix
+        struct.tag_suffix = tag_suffix.reverse
         struct.time = time
         struct.hostname = hostname
         @placeholders = struct

@@ -176,5 +176,66 @@ describe Fluent::RecordReformerOutput do
       end
       it { emit }
     end
+
+    context '${tag_prefix[N]} and ${tag_suffix[N]}' do
+      let(:config) {%[
+        type reformed
+        output_tag ${tag_suffix[-2]}
+        enable_ruby no
+
+        hostname ${hostname}
+        tag ${tag}
+        time ${time}
+        message ${tag_prefix[1]} ${tag_prefix[-2]} ${tag_suffix[2]} ${tag_suffix[-3]} ${message}
+      ]}
+      let(:tag) { 'prefix.test.tag.suffix' }
+      let(:tag_parts) { tag.split('.') }
+      before do
+        Fluent::Engine.stub(:now).and_return(time)
+        Fluent::Engine.should_receive(:emit).with("tag.suffix", time.to_i, {
+          'foo' => 'bar',
+          'message' => "prefix.test prefix.test.tag tag.suffix test.tag.suffix 1",
+          'hostname' => hostname,
+          'tag' => tag,
+          'time' => time.to_i.to_s, # hmm, want to remove ${time} placeholder
+        })
+        Fluent::Engine.should_receive(:emit).with("tag.suffix", time.to_i, {
+          'foo' => 'bar',
+          'message' => "prefix.test prefix.test.tag tag.suffix test.tag.suffix 2",
+          'hostname' => hostname,
+          'tag' => tag,
+          'time' => time.to_i.to_s, # hmm, want to remove ${time} placeholder
+        })
+      end
+      it { emit }
+    end
+
+    context '${tag_prefix[N]} and ${tag_suffix[N]} with ruby enabled' do
+      let(:config) { CONFIG + %[
+        test_tag ${tag_prefix[1]} ${tag_prefix[-2]} ${tag_suffix[2]} ${tag_suffix[-3]}
+      ]}
+      let(:tag) { 'prefix.test.tag.suffix' }
+      let(:tag_parts) { tag.split('.') }
+      before do
+        Fluent::Engine.stub(:now).and_return(time)
+        Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
+          'foo' => 'bar',
+          'message' => "#{hostname} #{tag_parts.last} 1",
+          'hostname' => hostname,
+          'tag' => tag,
+          'time' => time.strftime('%S'),
+          'test_tag' => "prefix.test prefix.test.tag tag.suffix test.tag.suffix",
+        })
+        Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
+          'foo' => 'bar',
+          'message' => "#{hostname} #{tag_parts.last} 2",
+          'hostname' => hostname,
+          'tag' => tag,
+          'time' => time.strftime('%S'),
+          'test_tag' => "prefix.test prefix.test.tag tag.suffix test.tag.suffix",
+        })
+      end
+      it { emit }
+    end
   end
 end
