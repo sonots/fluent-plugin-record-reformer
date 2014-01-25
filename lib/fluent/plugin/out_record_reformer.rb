@@ -54,8 +54,16 @@ module Fluent
       tag_parts = tag.split('.')
       tag_prefix = tag_prefix(tag_parts)
       tag_suffix = tag_suffix(tag_parts)
+      placeholders = {
+        'tag' => tag,
+        'tags' => tag_parts,
+        'tag_parts' => tag_parts,
+        'tag_prefix' => tag_prefix,
+        'tag_suffix' => tag_suffix,
+        'hostname' => @hostname,
+      }
       es.each { |time, record|
-        new_tag, new_record = reform(@output_tag, record, tag, tag_parts, tag_prefix, tag_suffix, Time.at(time))
+        new_tag, new_record = reform(@output_tag, time, record, placeholders)
         Engine.emit(new_tag, time, new_record)
       }
       chain.next
@@ -65,8 +73,8 @@ module Fluent
 
     private
 
-    def reform(output_tag, record, tag, tag_parts, tag_prefix, tag_suffix, time)
-      @placeholder_expander.prepare_placeholders(record, tag, tag_parts, tag_prefix, tag_suffix, @hostname, time)
+    def reform(output_tag, time, record, opts)
+      @placeholder_expander.prepare_placeholders(time, record, opts)
       new_tag = @placeholder_expander.expand(output_tag)
 
       new_record = @renew_record ? {} : record.dup
@@ -96,40 +104,23 @@ module Fluent
     end
 
     class PlaceholderExpander
-      # referenced https://github.com/fluent/fluent-plugin-rewrite-tag-filter, thanks!
       attr_reader :placeholders
 
-      def prepare_placeholders(record, tag, tag_parts, tag_prefix, tag_suffix, hostname, time)
-        placeholders = {
-          '${time}' => time.to_s,
-          '${tag}' => tag,
-          '${hostname}' => hostname,
-        }
+      def prepare_placeholders(time, record, opts)
+        placeholders = { '${time}' => Time.at(time).to_s }
+        record.each {|key, value| placeholders.store("${#{key}}", value) }
 
-        size = tag_parts.size
-
-        tag_parts.each_with_index { |t, idx|
-          placeholders.store("${tag_parts[#{idx}]}", t)
-          placeholders.store("${tag_parts[#{idx-size}]}", t) # support tag_parts[-1]
-
-          # tags is just for old version compatibility
-          placeholders.store("${tags[#{idx}]}", t)
-          placeholders.store("${tags[#{idx-size}]}", t) # support tags[-1]
-        }
-
-        tag_prefix.each_with_index { |t, idx|
-          placeholders.store("${tag_prefix[#{idx}]}", t)
-          placeholders.store("${tag_prefix[#{idx-size}]}", t) # support tag_prefix[-1]
-        }
-
-        tag_suffix.each_with_index { |t, idx|
-          placeholders.store("${tag_suffix[#{idx}]}", t)
-          placeholders.store("${tag_suffix[#{idx-size}]}", t) # support tag_suffix[-1]
-        }
-
-        record.each { |k, v|
-          placeholders.store("${#{k}}", v)
-        }
+        opts.each do |key, value|
+          if value.kind_of?(Array) # tag_parts, etc
+            size = value.size
+            value.each_with_index { |v, idx|
+              placeholders.store("${#{key}[#{idx}]}", v)
+              placeholders.store("${#{key}[#{idx-size}]}", v) # support [-1]
+            }
+          else # string, interger, float, and others?
+            placeholders.store("${#{key}}", value)
+          end
+        end
 
         @placeholders = placeholders
       end
@@ -147,21 +138,13 @@ module Fluent
 
       # Get placeholders as a struct
       #
-      # @param [Hash]   record      the record, one of information
-      # @param [String] tag         the tag
-      # @param [Array]  tag_parts   the tag parts (tag splitted by .)
-      # @param [Array]  tag_prefix  the tag prefix parts
-      # @param [Array]  tag_suffix  the tag suffix parts
-      # @param [String] hostname    the hostname
       # @param [Time]   time        the time
-      def prepare_placeholders(record, tag, tag_parts, tag_prefix, tag_suffix, hostname, time)
+      # @param [Hash]   record      the record
+      # @param [Hash]   opts        others
+      def prepare_placeholders(time, record, opts)
         struct = UndefOpenStruct.new(record)
-        struct.tag  = tag
-        struct.tags = struct.tag_parts = tag_parts # tags is for old version compatibility
-        struct.tag_prefix = tag_prefix
-        struct.tag_suffix = tag_suffix
-        struct.time = time
-        struct.hostname = hostname
+        struct.time = Time.at(time)
+        opts.each {|key, value| struct.__send__("#{key}=", value) }
         @placeholders = struct
       end
 
