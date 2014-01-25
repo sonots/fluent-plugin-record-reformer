@@ -1,3 +1,9 @@
+## 0.2.3 (2014/01/25)
+
+Changes:
+
+* Change ${time} placeholder from integer to string when `enable_ruby false`
+
 ## 0.2.2 (2014/01/20)
 
 Enhancement:
