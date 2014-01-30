@@ -1,4 +1,5 @@
 require 'socket'
+require 'ostruct'
 
 module Fluent
   class RecordReformerOutput < Output
