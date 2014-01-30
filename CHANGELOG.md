@@ -1,3 +1,9 @@
+## 0.2.4 (2014/01/30)
+
+Fixes:
+
+* Fix `unitialized constant OpenStruct` error (thanks to emcgee)
+
 ## 0.2.3 (2014/01/25)
 
 Changes:
