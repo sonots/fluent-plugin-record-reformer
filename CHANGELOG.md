@@ -1,3 +1,9 @@
+## 0.2.5 (2014/02/04)
+
+Enhancement:
+
+* Support `log_level` option of Fleuntd v0.10.43
+
 ## 0.2.4 (2014/01/30)
 
 Fixes:
