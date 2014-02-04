@@ -16,6 +16,11 @@ module Fluent
 
     BUILTIN_CONFIGURATIONS = %W(type output_tag remove_keys renew_record enable_ruby)
 
+    # To support log_level option implemented by Fluentd v0.10.43
+    unless method_defined?(:log)
+      define_method("log") { $log }
+    end
+
     def configure(conf)
       super
 
@@ -69,7 +74,7 @@ module Fluent
       }
       chain.next
     rescue => e
-      $log.warn "record_reformer: #{e.class} #{e.message} #{e.backtrace.first}"
+      log.warn "record_reformer: #{e.class} #{e.message} #{e.backtrace.first}"
     end
 
     private
@@ -128,7 +133,7 @@ module Fluent
 
       def expand(str)
         str.gsub(/(\${[a-z_]+(\[-?[0-9]+\])?}|__[A-Z_]+__)/) {
-          $log.warn "record_reformer: unknown placeholder `#{$1}` found" unless @placeholders.include?($1)
+          log.warn "record_reformer: unknown placeholder `#{$1}` found" unless @placeholders.include?($1)
           @placeholders[$1]
         }
       end
