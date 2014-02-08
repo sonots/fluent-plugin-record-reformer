@@ -1,4 +1,4 @@
-# fluent-plugin-record-reformer
+# fluent-plugin-record-reformer, a plugin for [Fluentd](http://fluentd.org)
 
 [![Build Status](https://secure.travis-ci.org/sonots/fluent-plugin-record-reformer.png?branch=master)](http://travis-ci.org/sonots/fluent-plugin-record-reformer)
 
