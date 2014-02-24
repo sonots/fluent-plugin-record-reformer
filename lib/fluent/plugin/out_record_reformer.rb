@@ -68,13 +68,16 @@ module Fluent
         'tag_suffix' => tag_suffix,
         'hostname' => @hostname,
       }
-      es.each { |time, record|
+      last_record = nil
+      es.each {|time, record|
+        last_record = record # for debug log
         new_tag, new_record = reform(@output_tag, time, record, placeholders)
         Engine.emit(new_tag, time, new_record)
       }
       chain.next
     rescue => e
       log.warn "record_reformer: #{e.class} #{e.message} #{e.backtrace.first}"
+      log.debug "record_reformer: output_tag:#{@output_tag} map:#{@map} record:#{last_record} placeholders:#{placeholders}"
     end
 
     private
