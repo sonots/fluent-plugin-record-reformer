@@ -1,3 +1,9 @@
+## 0.2.6 (2014/02/24)
+
+Enhancement:
+
+* Add debug log
+
 ## 0.2.5 (2014/02/04)
 
 Enhancement:
