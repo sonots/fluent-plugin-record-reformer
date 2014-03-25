@@ -1,3 +1,9 @@
+## 0.2.7 (2014/03/26)
+
+Fixes:
+
+* Fix `log` method was not available in the inner class #5. 
+
 ## 0.2.6 (2014/02/24)
 
 Enhancement:
