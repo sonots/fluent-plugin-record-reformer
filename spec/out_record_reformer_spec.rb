@@ -177,6 +177,23 @@ describe Fluent::RecordReformerOutput do
       it { emit }
     end
 
+    context 'enable_ruby no (unknown placeholder)' do
+      let(:emit) do
+        driver.run { driver.emit({'foo'=>'bar', 'message' => '1'}, time.to_i) }
+      end
+      let(:config) {%[
+        type reformed
+        output_tag reformed.${tag}
+        enable_ruby no
+
+        message ${unknown}
+      ]}
+      before do
+        driver.instance.log.should_receive(:warn).with("record_reformer: unknown placeholder `${unknown}` found")
+      end
+      it { emit }
+    end
+
     context '${tag_prefix[N]} and ${tag_suffix[N]}' do
       let(:config) {%[
         type reformed

@@ -48,9 +48,9 @@ module Fluent
           require 'pathname'
           require 'uri'
           require 'cgi'
-          RubyPlaceholderExpander.new
+          RubyPlaceholderExpander.new(log)
         else
-          PlaceholderExpander.new
+          PlaceholderExpander.new(log)
         end
 
       @hostname = Socket.gethostname
@@ -113,7 +113,11 @@ module Fluent
     end
 
     class PlaceholderExpander
-      attr_reader :placeholders
+      attr_reader :placeholders, :log
+
+      def initialize(log)
+        @log = log
+      end
 
       def prepare_placeholders(time, record, opts)
         placeholders = { '${time}' => Time.at(time).to_s }
@@ -143,7 +147,11 @@ module Fluent
     end
 
     class RubyPlaceholderExpander
-      attr_reader :placeholders
+      attr_reader :placeholders, :log
+
+      def initialize(log)
+        @log = log
+      end
 
       # Get placeholders as a struct
       #
