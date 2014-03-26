@@ -252,6 +252,24 @@ describe Fluent::RecordReformerOutput do
         end
         it { emit }
       end
+
+      context "uuid with enable_ruby #{enable_ruby}" do
+        let(:config) {%[
+          output_tag tag
+          enable_ruby #{enable_ruby}
+          message ${uuid} ${uuid_random} ${uuid_hostname} ${uuid_timestamp}
+        ]}
+        let(:expected) {
+          d = driver.instance
+          "#{d.uuid_random} #{d.uuid_random} #{d.uuid_hostname} #{d.uuid_timestamp}"
+        }
+        before do
+          Fluent::Engine.stub(:now).and_return(time)
+          Fluent::Engine.should_receive(:emit).with("tag", time.to_i, {'message' => expected })
+        end
+        it { emit }
+      end
+
     end
   end
 end

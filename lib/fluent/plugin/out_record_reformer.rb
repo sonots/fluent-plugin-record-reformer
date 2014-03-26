@@ -1,5 +1,6 @@
 require 'socket'
 require 'ostruct'
+require 'uuidtools'
 
 module Fluent
   class RecordReformerOutput < Output
@@ -54,7 +55,13 @@ module Fluent
         end
 
       @hostname = Socket.gethostname
+      @uuid_random = UUIDTools::UUID.random_create.to_s
+      @uuid_hostname = UUIDTools::UUID.sha1_create(UUIDTools::UUID_DNS_NAMESPACE, @hostname).to_s
+      @uuid_timestamp = UUIDTools::UUID.timestamp_create.to_s
     end
+
+    # for test
+    attr_reader :uuid_random, :uuid_hostname, :uuid_timestamp
 
     def emit(tag, es, chain)
       tag_parts = tag.split('.')
@@ -67,6 +74,10 @@ module Fluent
         'tag_prefix' => tag_prefix,
         'tag_suffix' => tag_suffix,
         'hostname' => @hostname,
+        'uuid' => @uuid_random,
+        'uuid_random' => @uuid_random,
+        'uuid_hostname' => @uuid_hostname,
+        'uuid_timestamp' => @uuid_timestamp,
       }
       last_record = nil
       es.each {|time, record|
