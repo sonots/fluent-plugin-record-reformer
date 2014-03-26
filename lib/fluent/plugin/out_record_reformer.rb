@@ -54,6 +54,10 @@ module Fluent
         end
 
       @hostname = Socket.gethostname
+      @uuid_r = UUIDTools::UUID.random_create.to_s
+      @uuid_h = UUIDTools::UUID.sha1_create(UUIDTools::UUID_DNS_NAMESPACE, @hostname).to_s
+      @uuid_ts = UUIDTools::UUID.timestamp_create.to_s
+      
     end
 
     def emit(tag, es, chain)
@@ -67,6 +71,10 @@ module Fluent
         'tag_prefix' => tag_prefix,
         'tag_suffix' => tag_suffix,
         'hostname' => @hostname,
+        'uuid' => @uuid_r,
+        'uuid:random' => @uuid_r
+        'uuid:hostname' => @uuid_h,
+        'uuid:timestamp' => @uuid_ts,
       }
       last_record = nil
       es.each {|time, record|
