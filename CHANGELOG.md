@@ -2,7 +2,7 @@
 
 Enhancement:
 
-* Add support for uuid, uuid:hostname, uuid:timestamp
+* Add support for uuid (uuid:random), uuid:hostname, uuid:timestamp
 
 ## 0.2.7 (2014/03/26)
 

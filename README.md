@@ -99,9 +99,9 @@ The keys of input json are available as placeholders. In the above example,
 shall be available. In addition, following placeholders are reserved: 
 
 * ${hostname} Hostname of the running machine
-* ${uuid} or ${uuid_random} A randomly generated UUID
-* ${uuid_hostname} A uuid based on the hostname
-* ${uuid_timestamp} A uuid based on the time
+* ${uuid} or ${uuid:random} A randomly generated UUID
+* ${uuid:hostname} A uuid based on the hostname
+* ${uuid:timestamp} A uuid based on the time
 * ${tag} Input tag
 * ${time} Time of the event
 * ${tags[N]} (Obsolete. Use tag\_parts) Input tag splitted by '.'
