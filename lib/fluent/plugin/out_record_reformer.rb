@@ -1,5 +1,6 @@
 require 'socket'
 require 'ostruct'
+require 'uuidtools'
 
 module Fluent
   class RecordReformerOutput < Output
