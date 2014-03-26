@@ -1,3 +1,9 @@
+## 0.2.8 (2014/03/26)
+
+Enhancement:
+
+* Add support for uuid, uuid:hostname, uuid:timestamp
+
 ## 0.2.7 (2014/03/26)
 
 Fixes:
