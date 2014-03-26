@@ -31,11 +31,10 @@ module Fluent
         conf.has_key?(k) # to suppress unread configuration warning
 
         # change uuid:random -> uuid
-	#        uuid:hostname -> uuid_h
-        #	 uuid:timestamp -> uuid_ts
-
-	
+        #        uuid:hostname -> uuid_hostname
+        #        uuid:timestamp -> uuid_timestamp
         @map[k] = v.gsub('${uuid:random}', '${uuid}').gsub('${uuid:hostname}', '${uuid_hostname}').gsub('${uuid:timestamp}', '${uuid_timestamp}')
+
       }
       # <record></record> directive
       conf.elements.select { |element| element.name == 'record' }.each { |element|
