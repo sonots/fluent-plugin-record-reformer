@@ -70,9 +70,6 @@ module Fluent
       tag_prefix = tag_prefix(tag_parts)
       tag_suffix = tag_suffix(tag_parts)
 
-      uuid_random = UUIDTools::UUID.random_create.to_s
-      uuid_timestamp = UUIDTools::UUID.timestamp_create.to_s
-
       placeholders = {
         'tag' => tag,
         'tags' => tag_parts,
