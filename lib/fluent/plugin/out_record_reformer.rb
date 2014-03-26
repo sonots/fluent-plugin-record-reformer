@@ -73,9 +73,9 @@ module Fluent
         'tag_suffix' => tag_suffix,
         'hostname' => @hostname,
         'uuid' => @uuid_r,
-        'uuid:random' => @uuid_r
-        'uuid:hostname' => @uuid_h,
-        'uuid:timestamp' => @uuid_ts,
+        'uuid_random' => @uuid_r,
+        'uuid_hostname' => @uuid_h,
+        'uuid_timestamp' => @uuid_ts,
       }
       last_record = nil
       es.each {|time, record|
