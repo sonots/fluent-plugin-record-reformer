@@ -29,7 +29,13 @@ module Fluent
       conf.each_pair { |k, v|
         next if BUILTIN_CONFIGURATIONS.include?(k)
         conf.has_key?(k) # to suppress unread configuration warning
-        @map[k] = v
+
+        # change uuid:random -> uuid
+	#        uuid:hostname -> uuid_h
+        #	 uuid:timestamp -> uuid_ts
+
+	
+        @map[k] = v.gsub('${uuid:random}', '${uuid}').gsub('${uuid:hostname}', '${uuid_hostname}').gsub('${uuid:timestamp}', '${uuid_timestamp}')
       }
       # <record></record> directive
       conf.elements.select { |element| element.name == 'record' }.each { |element|
@@ -55,16 +61,19 @@ module Fluent
         end
 
       @hostname = Socket.gethostname
-      @uuid_r = UUIDTools::UUID.random_create.to_s
-      @uuid_h = UUIDTools::UUID.sha1_create(UUIDTools::UUID_DNS_NAMESPACE, @hostname).to_s
-      @uuid_ts = UUIDTools::UUID.timestamp_create.to_s
-      
+      # this won't change, so set it one time
+      @uuid_hostname = UUIDTools::UUID.sha1_create(UUIDTools::UUID_DNS_NAMESPACE, @hostname).to_s
+            
     end
 
     def emit(tag, es, chain)
       tag_parts = tag.split('.')
       tag_prefix = tag_prefix(tag_parts)
       tag_suffix = tag_suffix(tag_parts)
+
+      uuid_random = UUIDTools::UUID.random_create.to_s
+      uuid_timestamp = UUIDTools::UUID.timestamp_create.to_s
+
       placeholders = {
         'tag' => tag,
         'tags' => tag_parts,
@@ -72,14 +81,20 @@ module Fluent
         'tag_prefix' => tag_prefix,
         'tag_suffix' => tag_suffix,
         'hostname' => @hostname,
-        'uuid' => @uuid_r,
-        'uuid_random' => @uuid_r,
-        'uuid_hostname' => @uuid_h,
-        'uuid_timestamp' => @uuid_ts,
+        'uuid_hostname' => @uuid_hostname,
       }
       last_record = nil
       es.each {|time, record|
         last_record = record # for debug log
+
+	# Generate unique IDs per record
+        uuid_random = UUIDTools::UUID.random_create.to_s
+        uuid_timestamp = UUIDTools::UUID.timestamp_create.to_s
+
+        placeholders["uuid"] = uuid_random
+        placeholders["uuid_random"] = uuid_random
+        placeholders["uuid_timestamp"] = uuid_timestamp
+
         new_tag, new_record = reform(@output_tag, time, record, placeholders)
         Engine.emit(new_tag, time, new_record)
       }
