@@ -87,9 +87,9 @@ module Fluent
         uuid_random = UUIDTools::UUID.random_create.to_s
         uuid_timestamp = UUIDTools::UUID.timestamp_create.to_s
 
-        placeholders["uuid"] = uuid_random
-        placeholders["uuid_random"] = uuid_random
-        placeholders["uuid_timestamp"] = uuid_timestamp
+        placeholders['uuid'] = uuid_random
+        placeholders['uuid_random'] = uuid_random
+        placeholders['uuid_timestamp'] = uuid_timestamp
 
         new_tag, new_record = reform(@output_tag, time, record, placeholders)
         Engine.emit(new_tag, time, new_record)
