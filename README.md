@@ -20,7 +20,7 @@ Example:
       renew_record false
       enable_ruby false
       
-      output_tag reformed.${tag}
+      tag reformed.${tag}
       <record>
         hostname ${hostname}
         input_tag ${tag}
@@ -58,7 +58,7 @@ Example:
       remove_keys remove_me
       renew_record false
       enable_ruby false
-      output_tag reformed.${tag}
+      tag reformed.${tag}
       
       hostname ${hostname}
       input_tag ${tag}
@@ -69,9 +69,13 @@ This results in same, but please note that following option parameters are reser
 
 ## Option Parameters
 
-- output_tag
+- output_tag (obsolete)
 
-    The output tag name
+    The output tag name. This option is deprecated. Use `tag` option instead
+
+- tag
+
+    The output tag name. 
 
 - remove_keys
 

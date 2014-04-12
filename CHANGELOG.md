@@ -1,3 +1,9 @@
+## 0.2.8 (2014/04/12)
+
+Changes:
+
+* Deprecate `output_tag` option. Use `tag` option instead.
+
 ## 0.2.7 (2014/03/26)
 
 Fixes:
