@@ -4,10 +4,10 @@ require_relative 'spec_helper'
 describe Fluent::RecordReformerOutput do
   before { Fluent::Test.setup }
   CONFIG = %[
-    output_tag reformed.${tag}
+    tag reformed.${tag}
 
     hostname ${hostname}
-    tag ${tag}
+    input_tag ${tag}
     time ${time.strftime('%S')}
     message ${hostname} ${tag_parts.last} ${URI.escape(message)}
   ]
@@ -22,6 +22,12 @@ describe Fluent::RecordReformerOutput do
 
       context "check default" do
         let(:config) { CONFIG }
+        it { expect { subject }.not_to raise_error }
+      end
+
+      context "tag is not specified" do
+        let(:config) { %[] }
+        it { expect { subject }.to raise_error(Fluent::ConfigError) }
       end
     end
   end
@@ -45,14 +51,14 @@ describe Fluent::RecordReformerOutput do
         Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
           'foo' => 'bar',
           'hostname' => hostname,
-          'tag' => tag,
+          'input_tag' => tag,
           'time' => time.strftime('%S'),
           'message' => "#{hostname} #{tag_parts.last} 1",
         })
         Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
           'foo' => 'bar',
           'hostname' => hostname,
-          'tag' => tag,
+          'input_tag' => tag,
           'time' => time.strftime('%S'),
           'message' => "#{hostname} #{tag_parts.last} 2",
         })
@@ -60,13 +66,27 @@ describe Fluent::RecordReformerOutput do
       it { emit }
     end
 
-    context 'record directive' do
+    context 'obsolete output_tag' do
       let(:config) {%[
         output_tag reformed.${tag}
+      ]}
+      before do
+        Fluent::Engine.stub(:now).and_return(time)
+        Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
+          'foo' => 'bar',
+          'message' => "1",
+        })
+      end
+      it { emit }
+    end
+
+    context 'record directive' do
+      let(:config) {%[
+        tag reformed.${tag}
 
         <record>
           hostname ${hostname}
-          output_tag ${tag}
+          tag ${tag}
           time ${time.strftime('%S')}
           message ${hostname} ${tag_parts.last} ${message}
         </record>
@@ -76,7 +96,7 @@ describe Fluent::RecordReformerOutput do
         Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
           'foo' => 'bar',
           'hostname' => hostname,
-          'output_tag' => tag,
+          'tag' => tag,
           'time' => time.strftime('%S'),
           'message' => "#{hostname} #{tag_parts.last} 1",
         })
@@ -90,7 +110,7 @@ describe Fluent::RecordReformerOutput do
         Fluent::Engine.stub(:now).and_return(time)
         Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
           'hostname' => hostname,
-          'tag' => tag,
+          'input_tag' => tag,
           'time' => time.strftime('%S'),
         })
       end
@@ -103,7 +123,7 @@ describe Fluent::RecordReformerOutput do
         Fluent::Engine.stub(:now).and_return(time)
         Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
           'hostname' => hostname,
-          'tag' => tag,
+          'input_tag' => tag,
           'time' => time.strftime('%S'),
           'message' => "#{hostname} #{tag_parts.last} 1",
         })
@@ -116,7 +136,7 @@ describe Fluent::RecordReformerOutput do
         driver.run { driver.emit({}, time.to_i) }
       end
       let(:config) {%[
-        output_tag reformed.${tag}
+        tag reformed.${tag}
         enable_ruby no
         message ${unknown}
       ]}
@@ -136,7 +156,7 @@ describe Fluent::RecordReformerOutput do
     %w[yes no].each do |enable_ruby|
       context "hostname with enble_ruby #{enable_ruby}" do
         let(:config) {%[
-          output_tag tag
+          tag tag
           enable_ruby #{enable_ruby}
           message ${hostname}
         ]}
@@ -149,7 +169,7 @@ describe Fluent::RecordReformerOutput do
 
       context "tag with enable_ruby #{enable_ruby}" do
         let(:config) {%[
-          output_tag tag
+          tag tag
           enable_ruby #{enable_ruby}
           message ${tag}
         ]}
@@ -162,7 +182,7 @@ describe Fluent::RecordReformerOutput do
 
       context "tag_parts with enable_ruby #{enable_ruby}" do
         let(:config) {%[
-          output_tag tag
+          tag tag
           enable_ruby #{enable_ruby}
           message ${tag_parts[0]} ${tag_parts[-1]}
         ]}
@@ -176,7 +196,7 @@ describe Fluent::RecordReformerOutput do
 
       context "support old tags with enable_ruby #{enable_ruby}" do
         let(:config) {%[
-          output_tag tag
+          tag tag
           enable_ruby #{enable_ruby}
           message ${tags[0]} ${tags[-1]}
         ]}
@@ -190,7 +210,7 @@ describe Fluent::RecordReformerOutput do
 
       context "${tag_prefix[N]} and ${tag_suffix[N]} with enable_ruby #{enable_ruby}" do
         let(:config) {%[
-          output_tag ${tag_suffix[-2]}
+          tag ${tag_suffix[-2]}
           enable_ruby #{enable_ruby}
           message ${tag_prefix[1]} ${tag_prefix[-2]} ${tag_suffix[2]} ${tag_suffix[-3]}
         ]}
@@ -205,7 +225,7 @@ describe Fluent::RecordReformerOutput do
 
       context "time with enable_ruby #{enable_ruby}" do
         let(:config) {%[
-          output_tag tag
+          tag tag
           enable_ruby #{enable_ruby}
           time ${time}
         ]}
@@ -224,7 +244,7 @@ describe Fluent::RecordReformerOutput do
           end
         end
         let(:config) {%[
-          output_tag tag
+          tag tag
           enable_ruby #{enable_ruby}
           message bar ${message}
         ]}

@@ -9,12 +9,13 @@ module Fluent
       super
     end
 
-    config_param :output_tag, :string
+    config_param :output_tag, :string, :default => nil # obsolete
+    config_param :tag, :string, :default => nil
     config_param :remove_keys, :string, :default => nil
     config_param :renew_record, :bool, :default => false
     config_param :enable_ruby, :bool, :default => true # true for lower version compatibility
 
-    BUILTIN_CONFIGURATIONS = %W(type output_tag remove_keys renew_record enable_ruby)
+    BUILTIN_CONFIGURATIONS = %W(type tag output_tag remove_keys renew_record enable_ruby)
 
     # To support log_level option implemented by Fluentd v0.10.43
     unless method_defined?(:log)
@@ -40,6 +41,14 @@ module Fluent
 
       if @remove_keys
         @remove_keys = @remove_keys.split(',')
+      end
+
+      if @output_tag and @tag.nil? # for lower version compatibility
+        log.warn "out_record_reformer: `output_tag` is deprecated. Use `tag` option instead."
+        @tag = @output_tag
+      end
+      if @tag.nil?
+        raise Fluent::ConfigError, "out_record_reformer: `tag` must be specified"
       end
 
       @placeholder_expander =
@@ -71,20 +80,20 @@ module Fluent
       last_record = nil
       es.each {|time, record|
         last_record = record # for debug log
-        new_tag, new_record = reform(@output_tag, time, record, placeholders)
+        new_tag, new_record = reform(@tag, time, record, placeholders)
         Engine.emit(new_tag, time, new_record)
       }
       chain.next
     rescue => e
       log.warn "record_reformer: #{e.class} #{e.message} #{e.backtrace.first}"
-      log.debug "record_reformer: output_tag:#{@output_tag} map:#{@map} record:#{last_record} placeholders:#{placeholders}"
+      log.debug "record_reformer: tag:#{@tag} map:#{@map} record:#{last_record} placeholders:#{placeholders}"
     end
 
     private
 
-    def reform(output_tag, time, record, opts)
+    def reform(tag, time, record, opts)
       @placeholder_expander.prepare_placeholders(time, record, opts)
-      new_tag = @placeholder_expander.expand(output_tag)
+      new_tag = @placeholder_expander.expand(tag)
 
       new_record = @renew_record ? {} : record.dup
       @map.each_pair { |k, v| new_record[k] = @placeholder_expander.expand(v) }
