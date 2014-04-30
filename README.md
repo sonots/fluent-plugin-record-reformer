@@ -20,11 +20,12 @@ Example:
       renew_record false
       enable_ruby false
       
-      tag reformed.${tag}
+      tag reformed.${tag_prefix[-2]}
       <record>
         hostname ${hostname}
         input_tag ${tag}
-        message ${message}, ${tag_parts[-1]}
+        last_tag ${tag_parts[-1]}
+        message ${message}, yay!
       </record>
     </match>
 
@@ -33,7 +34,7 @@ Assume following input is coming (indented):
 ```js
 foo.bar {
   "remove_me":"bar",
-  "foo":"bar",
+  "not_remove_me":"bar",
   "message":"Hello world!"
 }
 ```
@@ -41,11 +42,12 @@ foo.bar {
 then output becomes as below (indented):
 
 ```js
-reformed.foo.bar {
-  "foo":"bar",
+reformed.foo {
+  "not_remove_me":"bar",
   "hostname":"YOUR_HOSTNAME",
   "input_tag":"foo.bar",
-  "message":"Hello world!, bar",
+  "last_tag":"bar",
+  "message":"Hello world!, yay!",
 }
 ```
 
@@ -58,11 +60,12 @@ Example:
       remove_keys remove_me
       renew_record false
       enable_ruby false
-      tag reformed.${tag}
+      tag reformed.${tag_prefix[-2]}
       
       hostname ${hostname}
       input_tag ${tag}
-      message ${message}, ${tag_parts[-1]}
+      last_tag ${tag_parts[-1]}
+      message ${message}, yay!
     </match>
 
 This results in same, but please note that following option parameters are reserved, so can not be used as a record key.
@@ -85,7 +88,7 @@ This results in same, but please note that following option parameters are reser
 
 - renew_record *bool*
 
-    Set to `true` if you do not want to extend (or merge) the input record fields. Default is `false`.
+    `renew_record true` creates an output record newly without extending (merging) the input record fields. Default is `false`.
 
 - enable_ruby *bool*
 
