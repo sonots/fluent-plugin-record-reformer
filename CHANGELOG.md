@@ -1,3 +1,9 @@
+## 0.2.9 (2014/05/14)
+
+Enhancements:
+
+* Add `keep_keys` option
+
 ## 0.2.8 (2014/04/12)
 
 Changes:
