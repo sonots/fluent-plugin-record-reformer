@@ -29,6 +29,11 @@ describe Fluent::RecordReformerOutput do
         let(:config) { %[] }
         it { expect { subject }.to raise_error(Fluent::ConfigError) }
       end
+
+      context "keep_keys must be specified togerther with renew_record true" do
+        let(:config) { %[keep_keys a] }
+        it { expect { subject }.to raise_error(Fluent::ConfigError) }
+      end
     end
   end
 
@@ -126,6 +131,21 @@ describe Fluent::RecordReformerOutput do
           'input_tag' => tag,
           'time' => time.strftime('%S'),
           'message' => "#{hostname} #{tag_parts.last} 1",
+        })
+      end
+      it { emit }
+    end
+
+    context 'keep_keys' do
+      let(:emit) do
+        driver.run { driver.emit({'foo'=>'bar', 'message' => 1}, time.to_i) }
+      end
+      let(:config) { %[tag reformed.${tag}\nrenew_record true\nkeep_keys foo,message] }
+      before do
+        Fluent::Engine.stub(:now).and_return(time)
+        Fluent::Engine.should_receive(:emit).with("reformed.#{tag}", time.to_i, {
+          'foo' => 'bar',
+          'message' => 1, # this keep type
         })
       end
       it { emit }

@@ -90,6 +90,12 @@ This results in same, but please note that following option parameters are reser
 
     `renew_record true` creates an output record newly without extending (merging) the input record fields. Default is `false`.
 
+- keep_keys
+
+    You may use with `renew_record true`. Specify record keys to be kept by a string separated by , (comma) like
+
+        keep_keys message,foo
+
 - enable_ruby *bool*
 
     Enable to use ruby codes in placeholders. See `Placeholders` section.

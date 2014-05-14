@@ -12,10 +12,11 @@ module Fluent
     config_param :output_tag, :string, :default => nil # obsolete
     config_param :tag, :string, :default => nil
     config_param :remove_keys, :string, :default => nil
+    config_param :keep_keys, :string, :default => nil
     config_param :renew_record, :bool, :default => false
     config_param :enable_ruby, :bool, :default => true # true for lower version compatibility
 
-    BUILTIN_CONFIGURATIONS = %W(type tag output_tag remove_keys renew_record enable_ruby)
+    BUILTIN_CONFIGURATIONS = %W(type tag output_tag remove_keys renew_record keep_keys enable_ruby)
 
     # To support log_level option implemented by Fluentd v0.10.43
     unless method_defined?(:log)
@@ -41,6 +42,11 @@ module Fluent
 
       if @remove_keys
         @remove_keys = @remove_keys.split(',')
+      end
+
+      if @keep_keys
+        raise Fluent::ConfigError, "out_record_reformer: `renew_record` must be true to use `keep_keys`" unless @renew_record
+        @keep_keys = @keep_keys.split(',')
       end
 
       if @output_tag and @tag.nil? # for lower version compatibility
@@ -96,8 +102,9 @@ module Fluent
       new_tag = @placeholder_expander.expand(tag)
 
       new_record = @renew_record ? {} : record.dup
-      @map.each_pair { |k, v| new_record[k] = @placeholder_expander.expand(v) }
-      @remove_keys.each { |k| new_record.delete(k) } if @remove_keys
+      @keep_keys.each {|k| new_record[k] = record[k]} if @keep_keys and @renew_record
+      @map.each_pair {|k, v| new_record[k] = @placeholder_expander.expand(v) }
+      @remove_keys.each {|k| new_record.delete(k) } if @remove_keys
 
       [new_tag, new_record]
     end
