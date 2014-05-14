@@ -92,7 +92,7 @@ This results in same, but please note that following option parameters are reser
 
 - keep_keys
 
-    You may use with `renew_record true`. Specify record keys to be kept by a string separated by , (comma) like
+    You may want to remain some record fields although you specify `renew_record true`. Then, specify record keys to be kept by a string separated by , (comma) like
 
         keep_keys message,foo
 
