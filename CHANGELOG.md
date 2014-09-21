@@ -1,3 +1,9 @@
+## 0.2.10 (2014/09/22)
+
+Changes:
+
+* Remove fluentd version constraint
+
 ## 0.2.9 (2014/05/14)
 
 Enhancements:
