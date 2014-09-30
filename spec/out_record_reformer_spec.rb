@@ -259,21 +259,23 @@ describe Fluent::RecordReformerOutput do
       context "record with enable_ruby #{enable_ruby}" do
         let(:emit) do
           driver.run do
-            driver.emit({'message' => '1'}, time.to_i)
-            driver.emit({'message' => '2'}, time.to_i)
+            driver.emit({'message' => '1', 'eventType' => 'foo'}, time.to_i)
+            driver.emit({'message' => '2', 'eventType' => 'foo'}, time.to_i)
           end
         end
         let(:config) {%[
           tag tag
           enable_ruby #{enable_ruby}
           message bar ${message}
+          eventtype ${eventType}
+          remove_keys eventType
         ]}
         let(:tag) { 'prefix.test.tag.suffix' }
         let(:tag_parts) { tag.split('.') }
         before do
           Fluent::Engine.stub(:now).and_return(time)
-          Fluent::Engine.should_receive(:emit).with("tag", time.to_i, { 'message' => "bar 1", })
-          Fluent::Engine.should_receive(:emit).with("tag", time.to_i, { 'message' => "bar 2", })
+          Fluent::Engine.should_receive(:emit).with("tag", time.to_i, { 'message' => "bar 1", 'eventtype' => 'foo'})
+          Fluent::Engine.should_receive(:emit).with("tag", time.to_i, { 'message' => "bar 2", 'eventtype' => 'foo'})
         end
         it { emit }
       end
