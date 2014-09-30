@@ -1,3 +1,9 @@
+## 0.3.0 (2014/10/01)
+
+Fixes:
+
+* Fix to support camelCase record key name with `enable_ruby false`
+
 ## 0.2.10 (2014/09/22)
 
 Changes:
