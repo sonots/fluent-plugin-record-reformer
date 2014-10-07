@@ -165,6 +165,22 @@ describe Fluent::RecordReformerOutput do
       end
       it { emit }
     end
+
+    context 'missing nested tags' do
+      let(:emit) do
+        driver.run { driver.emit({'doesnotexist'=>'foo'}, time.to_i) }
+      end
+      let(:config) {%[
+        tag ${nothing["doesnotexist"]}
+      ]}
+      before do
+        Fluent::Engine.should_receive(:emit).with(nil, time.to_i, {
+            'doesnotexist' => 'foo',
+        })
+        driver.instance.log.should_receive(:warn)
+      end
+      it { emit }
+    end
   end
 
   describe 'test placeholders' do

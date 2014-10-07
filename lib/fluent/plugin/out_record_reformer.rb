@@ -185,8 +185,12 @@ module Fluent
       #
       # @param [String] str         the string to be replaced
       def expand(str)
-        str = str.gsub(/\$\{([^}]+)\}/, '#{\1}') # ${..} => #{..}
-        eval "\"#{str}\"", @placeholders.instance_eval { binding }
+        interpolated = str.gsub(/\$\{([^}]+)\}/, '#{\1}') # ${..} => #{..}
+        begin
+          eval "\"#{interpolated}\"", @placeholders.instance_eval { binding }
+        rescue => e
+          log.warn "record_reformer: '#{str}' could not be expanded. #{e.class} #{e.message} #{e.backtrace.first}"
+        end
       end
 
       class UndefOpenStruct < OpenStruct
