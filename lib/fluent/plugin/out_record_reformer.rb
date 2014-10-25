@@ -105,6 +105,7 @@ module Fluent
       @keep_keys.each {|k| new_record[k] = record[k]} if @keep_keys and @renew_record
       @map.each_pair {|k, v| new_record[k] = @placeholder_expander.expand(v) }
       @remove_keys.each {|k| new_record.delete(k) } if @remove_keys
+      @remove_keys.each {|k| new_record.delete(k.to_sym) } if @remove_keys
 
       [new_tag, new_record]
     end
