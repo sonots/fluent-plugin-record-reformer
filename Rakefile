@@ -1,12 +1,15 @@
 # encoding: utf-8
 require "bundler/gem_tasks"
 
-require 'rspec/core'
-require 'rspec/core/rake_task'
-RSpec::Core::RakeTask.new(:spec) do |spec|
-  spec.pattern = FileList['spec/**/*_spec.rb']
+require 'rake/testtask'
+desc 'Run test_unit based test'
+Rake::TestTask.new(:test) do |t|
+  t.libs << "test"
+  t.test_files = Dir["test/**/test_*.rb"].sort
+  t.verbose = true
+  #t.warning = true
 end
-task :default => :spec
+task :default => :test
 
 desc 'Open an irb session preloaded with the gem library'
 task :console do

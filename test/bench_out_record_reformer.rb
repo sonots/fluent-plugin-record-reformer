@@ -1,5 +1,6 @@
 # encoding: UTF-8
-require_relative 'spec_helper'
+require_relative 'helper'
+require 'fluent/plugin/out_record_reformer'
 require 'benchmark'
 Fluent::Test.setup
 

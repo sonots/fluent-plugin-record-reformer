@@ -1,4 +1,3 @@
-require 'socket'
 require 'ostruct'
 
 module Fluent
@@ -6,6 +5,7 @@ module Fluent
     Fluent::Plugin.register_output('record_reformer', self)
 
     def initialize
+      require 'socket'
       super
     end
 
