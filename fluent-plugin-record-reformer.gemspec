@@ -19,7 +19,9 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency "fluentd"
   gem.add_development_dependency "rake"
-  gem.add_development_dependency "rspec"
   gem.add_development_dependency "pry"
   gem.add_development_dependency "pry-nav"
+  gem.add_development_dependency "test-unit"
+  gem.add_development_dependency "rr"
+  gem.add_development_dependency "timecop"
 end
