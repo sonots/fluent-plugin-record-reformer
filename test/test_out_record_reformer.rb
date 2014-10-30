@@ -65,6 +65,7 @@ class RecordReformerOutputTest < Test::Unit::TestCase
     test 'typical usage' do
       msgs = ['1', '2']
       emits = emit(CONFIG, msgs)
+      assert_equal 2, emits.size
       emits.each_with_index do |(tag, time, record), i|
         assert_equal("reformed.#{@tag}", tag)
         assert_equal('bar', record['eventType0'])
@@ -282,11 +283,11 @@ class RecordReformerOutputTest < Test::Unit::TestCase
       ]
       d = create_driver(config)
       mock(d.instance.log).warn("record_reformer: unknown placeholder `${unknown}` found")
-      d.emit({}, @time)
+      d.run { d.emit({}, @time) }
+      assert_equal 1, d.emits.size
     end
 
-=begin
-    test 'failed to expand (enable_ruby yes)' do
+    test 'failed to expand record field (enable_ruby yes)' do
       config = %[
         tag tag
         enable_ruby yes
@@ -296,8 +297,24 @@ class RecordReformerOutputTest < Test::Unit::TestCase
       ]
       d = create_driver(config)
       mock(d.instance.log).warn("record_reformer: failed to expand `${unknown['bar']}`", anything)
-      d.emit({}, @time)
+      d.run { d.emit({}, @time) }
+      # emit, but nil value
+      assert_equal 1, d.emits.size
+      d.emits.each do |(tag, time, record)|
+        assert_equal(nil, record['message'])
+      end
     end
-=end
+
+    test 'failed to expand tag (enable_ruby yes)' do
+      config = %[
+        tag ${unknown['bar']}
+        enable_ruby yes
+      ]
+      d = create_driver(config)
+      mock(d.instance.log).warn("record_reformer: failed to expand `${unknown['bar']}`", anything)
+      d.run { d.emit({}, @time) }
+      # nil tag message should not be emitted
+      assert_equal 0, d.emits.size
+    end
   end
 end
