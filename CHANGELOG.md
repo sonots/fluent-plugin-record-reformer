@@ -1,3 +1,11 @@
+## 0.4.0 (2014/10/31)
+
+Changes:
+
+* accept numbers as a record key
+* rescue if ruby code expansion failed, and log.warn
+* use newly test-unit gem instead of rspec
+
 ## 0.3.0 (2014/10/01)
 
 Fixes:
