@@ -24,8 +24,10 @@ class RecordReformerOutputTest < Test::Unit::TestCase
 
   def emit(config, msgs = [''])
     d = create_driver(config)
-    msgs.each do |msg|
-      d.run { d.emit({'eventType0' => 'bar', 'message' => msg}, @time) }
+    d.run do
+      msgs.each do |msg|
+        d.emit({'eventType0' => 'bar', 'message' => msg}, @time)
+      end
     end
 
     @instance = d.instance
