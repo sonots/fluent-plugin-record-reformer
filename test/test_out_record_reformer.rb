@@ -113,11 +113,11 @@ class RecordReformerOutputTest < Test::Unit::TestCase
       emits = emit(config)
       emits.each_with_index do |(tag, time, record), i|
         assert_equal("reformed.#{@tag}", tag)
-        assert_equal(nil, record['eventType0'])
+        assert_not_include(record, 'eventType0')
         assert_equal(@hostname, record['hostname'])
         assert_equal(@tag, record['input_tag'])
         assert_equal(@time.to_s, record['time'])
-        assert_equal(nil, record['message'])
+        assert_not_include(record, 'message')
       end
     end
 
@@ -127,7 +127,7 @@ class RecordReformerOutputTest < Test::Unit::TestCase
       emits = emit(config, msgs)
       emits.each_with_index do |(tag, time, record), i|
         assert_equal("reformed.#{@tag}", tag)
-        assert_equal(nil, record['eventType0'])
+        assert_not_include(record, 'eventType0')
         assert_equal(@hostname, record['hostname'])
         assert_equal(@tag, record['input_tag'])
         assert_equal(@time.to_s, record['time'])
@@ -266,7 +266,7 @@ class RecordReformerOutputTest < Test::Unit::TestCase
         msgs = ['1', '2']
         emits = emit(config, msgs)
         emits.each_with_index do |(tag, time, record), i|
-          assert_equal(nil, record['eventType0'])
+          assert_not_include(record, 'eventType0')
           assert_equal("bar", record['eventtype'])
           assert_equal("bar #{msgs[i]}", record['message'])
         end
@@ -301,7 +301,7 @@ class RecordReformerOutputTest < Test::Unit::TestCase
       # emit, but nil value
       assert_equal 1, d.emits.size
       d.emits.each do |(tag, time, record)|
-        assert_equal(nil, record['message'])
+        assert_nil(record['message'])
       end
     end
 

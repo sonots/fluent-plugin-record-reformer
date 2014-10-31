@@ -125,7 +125,7 @@ module Fluent
       1.upto(tag_parts.size-1).each do |i|
         rev_tag_suffix[i] = "#{rev_tag_parts[i]}.#{rev_tag_suffix[i-1]}"
       end
-      rev_tag_suffix.reverse
+      rev_tag_suffix.reverse!
     end
 
     class PlaceholderExpander
