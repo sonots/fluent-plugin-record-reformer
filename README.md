@@ -105,9 +105,9 @@ This results in same, but please note that following option parameters are reser
 
 The keys of input json are available as placeholders. In the above example, 
 
-* ${foo}
-* ${message}
 * ${remove_me}
+* ${not_remove_me}
+* ${message}
 
 shall be available. In addition, following placeholders are reserved: 
 
