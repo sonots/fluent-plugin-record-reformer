@@ -1,3 +1,10 @@
+## 0.5.0 (2014/03/06)
+
+Enhancements:
+
+* Support JSON Array/Hash
+* Support placeholders for keys
+
 ## 0.4.0 (2014/10/31)
 
 Changes:
