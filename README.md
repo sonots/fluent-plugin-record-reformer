@@ -148,6 +148,7 @@ Following plugins look similar:
 * [fluent-plugin-record-modifier](https://github.com/repeatedly/fluent-plugin-record-modifier)
 * [fluent-plugin-format](https://github.com/mach/fluent-plugin-format)
 * [fluent-plugin-add](https://github.com/yu-yamada/fluent-plugin-add)
+* [filter_record_transformer](http://docs.fluentd.org/v0.12/articles/filter_record_transformer) is a Fluentd v0.12 built-in plugin which is based on record-reformer.
 
 ## ChangeLog
 
@@ -163,4 +164,4 @@ See [CHANGELOG.md](CHANGELOG.md) for details.
 
 ## Copyright
 
-Copyright (c) 2013 Naotoshi SEO. See [LICENSE](LICENSE) for details.
+Copyright (c) 2013 - 2015 Naotoshi Seo. See [LICENSE](LICENSE) for details.
