@@ -30,13 +30,13 @@ module Fluent
       conf.each_pair { |k, v|
         next if BUILTIN_CONFIGURATIONS.include?(k)
         conf.has_key?(k) # to suppress unread configuration warning
-        @map[k] = v
+        @map[k] = parse_value(v)
       }
       # <record></record> directive
       conf.elements.select { |element| element.name == 'record' }.each { |element|
         element.each_pair { |k, v|
           element.has_key?(k) # to suppress unread configuration warning
-          @map[k] = v
+          @map[k] = parse_value(v)
         }
       }
 
@@ -97,16 +97,46 @@ module Fluent
 
     private
 
+    def parse_value(value_str)
+      if value_str.start_with?('{', '[')
+        JSON.parse(value_str)
+      else
+        value_str
+      end
+    rescue => e
+      log.warn "failed to parse #{value_str} as json. Assuming #{value_str} is a string", :error_class => e.class, :error => e.message
+      value_str # emit as string
+    end
+
     def reform(tag, time, record, opts)
       @placeholder_expander.prepare_placeholders(time, record, opts)
       new_tag = @placeholder_expander.expand(tag)
 
       new_record = @renew_record ? {} : record.dup
       @keep_keys.each {|k| new_record[k] = record[k]} if @keep_keys and @renew_record
-      @map.each_pair {|k, v| new_record[k] = @placeholder_expander.expand(v) }
+      new_record.merge!(expand_placeholders(@map))
       @remove_keys.each {|k| new_record.delete(k) } if @remove_keys
 
       [new_tag, new_record]
+    end
+
+    def expand_placeholders(value)
+      if value.is_a?(String)
+        new_value = @placeholder_expander.expand(value)
+      elsif value.is_a?(Hash)
+        new_value = {}
+        value.each_pair do |k, v|
+          new_value[@placeholder_expander.expand(k)] = expand_placeholders(v)
+        end
+      elsif value.is_a?(Array)
+        new_value = []
+        value.each_with_index do |v, i|
+          new_value[i] = expand_placeholders(v)
+        end
+      else
+        new_value = value
+      end
+      new_value
     end
 
     def tag_prefix(tag_parts)
@@ -186,13 +216,11 @@ module Fluent
       # @param [String] str         the string to be replaced
       def expand(str)
         interpolated = str.gsub(/\$\{([^}]+)\}/, '#{\1}') # ${..} => #{..}
-        begin
-          eval "\"#{interpolated}\"", @placeholders.instance_eval { binding }
-        rescue => e
-          log.warn "record_reformer: failed to expand `#{str}`", :error_class => e.class, :error => e.message
-          log.warn_backtrace
-          nil
-        end
+        eval "\"#{interpolated}\"", @placeholders.instance_eval { binding }
+      rescue => e
+        log.warn "record_reformer: failed to expand `#{str}`", :error_class => e.class, :error => e.message
+        log.warn_backtrace
+        nil
       end
 
       class UndefOpenStruct < OpenStruct
