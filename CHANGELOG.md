@@ -1,4 +1,10 @@
-## 0.5.0 (2014/03/06)
+## 0.6.0 (2015/04/11)
+
+Changes:
+
+* Accept field names starting with `@` (and any field names) in `enable_ruby false`
+
+## 0.5.0 (2015/03/06)
 
 Enhancements:
 
