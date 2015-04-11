@@ -161,7 +161,7 @@ class RecordReformerOutputTest < Test::Unit::TestCase
         emits = emit(config, use_v1, msgs)
         emits.each_with_index do |(tag, time, record), i|
           assert_equal("reformed.#{@tag}", tag)
-          assert_equal("#{@hostname} ${tag_parts.last} ${URI.encode(message)}", record['message'])
+          assert_equal("#{@hostname}  ", record['message'])
         end
       end
     end
@@ -384,6 +384,36 @@ class RecordReformerOutputTest < Test::Unit::TestCase
         d.run { d.emit({}, @time) }
         # nil tag message should not be emitted
         assert_equal 0, d.emits.size
+      end
+
+      test 'expand fields starting with @ (enable_ruby no)' do
+        config = %[
+          tag tag
+          enable_ruby no
+          <record>
+            foo ${@timestamp}
+          </record>
+        ]
+        d = create_driver(config, use_v1)
+        message = {"@timestamp" => "foo"}
+        d.run { d.emit(message, @time) }
+        reformed = d.emits.first[2]
+        assert_equal reformed["foo"], message["@timestamp"]
+      end
+
+      test 'expand fields starting with @ (enable_ruby yes)' do
+        config = %[
+          tag tag
+          enable_ruby yes
+          <record>
+            foo ${__send__("@timestamp")}
+          </record>
+        ]
+        d = create_driver(config, use_v1)
+        message = {"@timestamp" => "foo"}
+        d.run { d.emit(message, @time) }
+        reformed = d.emits.first[2]
+        assert_equal reformed["foo"], message["@timestamp"]
       end
     end
   end
