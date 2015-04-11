@@ -397,8 +397,9 @@ class RecordReformerOutputTest < Test::Unit::TestCase
         d = create_driver(config, use_v1)
         message = {"@timestamp" => "foo"}
         d.run { d.emit(message, @time) }
-        reformed = d.emits.first[2]
-        assert_equal reformed["foo"], message["@timestamp"]
+        d.emits.each do |(tag, time, record)|
+          assert_equal message["@timestamp"], record["foo"]
+        end
       end
 
       test 'expand fields starting with @ (enable_ruby yes)' do
@@ -412,8 +413,9 @@ class RecordReformerOutputTest < Test::Unit::TestCase
         d = create_driver(config, use_v1)
         message = {"@timestamp" => "foo"}
         d.run { d.emit(message, @time) }
-        reformed = d.emits.first[2]
-        assert_equal reformed["foo"], message["@timestamp"]
+        d.emits.each do |(tag, time, record)|
+          assert_equal message["@timestamp"], record["foo"]
+        end
       end
     end
   end
