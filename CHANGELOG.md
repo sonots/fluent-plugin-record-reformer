@@ -1,3 +1,9 @@
+## 0.6.1 (2015/05/10)
+
+Enhancements:
+
+* Support label routing of Fluentd v0.12
+
 ## 0.6.0 (2015/04/11)
 
 Changes:
