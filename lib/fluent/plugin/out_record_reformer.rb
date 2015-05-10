@@ -23,6 +23,11 @@ module Fluent
       define_method("log") { $log }
     end
 
+    # Define `router` method of v0.12 to support v0.10 or earlier
+    unless method_defined?(:router)
+      define_method("router") { Fluent::Engine }
+    end
+
     def configure(conf)
       super
 
@@ -87,7 +92,7 @@ module Fluent
       es.each {|time, record|
         last_record = record # for debug log
         new_tag, new_record = reform(@tag, time, record, placeholders)
-        Engine.emit(new_tag, time, new_record) if new_tag
+        router.emit(new_tag, time, new_record) if new_tag
       }
       chain.next
     rescue => e
