@@ -1,5 +1,6 @@
 require_relative 'helper'
 require 'rr'
+require 'time'
 require 'timecop'
 require 'fluent/plugin/out_record_reformer'
 
@@ -135,6 +136,22 @@ class RecordReformerOutputTest < Test::Unit::TestCase
           assert_equal(@tag, record['input_tag'])
           assert_equal(@time.to_s, record['time'])
           assert_equal("#{@hostname} #{@tag_parts[-1]} #{msgs[i]}", record['message'])
+        end
+      end
+
+      test 'renew_time_key' do
+        times = [ Time.local(2,2,3,4,5,2010,nil,nil,nil,nil), Time.local(3,2,3,4,5,2010,nil,nil,nil,nil) ]
+        config = <<EOC
+    tag reformed.${tag}
+    enable_ruby true
+    message ${Time.parse(message).to_i}
+    renew_time_key message
+EOC
+        msgs = times.map{|t| t.to_s }
+        emits = emit(config, use_v1, msgs)
+        emits.each_with_index do |(tag, time, record), i|
+          assert_equal("reformed.#{@tag}", tag)
+          assert_equal(times[i].to_i, time)
         end
       end
 

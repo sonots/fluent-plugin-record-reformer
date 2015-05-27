@@ -90,6 +90,10 @@ This results in same, but please note that following option parameters are reser
 
     `renew_record true` creates an output record newly without extending (merging) the input record fields. Default is `false`.
 
+- renew\_time\_key *string*
+
+    `renew_time_key foo` overwrite time of events with value of field `foo` if exist. The value of `foo` must be unix time.
+
 - keep_keys
 
     You may want to remain some record fields although you specify `renew_record true`. Then, specify record keys to be kept by a string separated by , (comma) like

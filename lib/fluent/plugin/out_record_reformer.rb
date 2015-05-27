@@ -14,6 +14,7 @@ module Fluent
     config_param :remove_keys, :string, :default => nil
     config_param :keep_keys, :string, :default => nil
     config_param :renew_record, :bool, :default => false
+    config_param :renew_time_key, :string, :default => nil
     config_param :enable_ruby, :bool, :default => true # true for lower version compatibility
 
     BUILTIN_CONFIGURATIONS = %W(type tag output_tag remove_keys renew_record keep_keys enable_ruby)
@@ -92,7 +93,12 @@ module Fluent
       es.each {|time, record|
         last_record = record # for debug log
         new_tag, new_record = reform(@tag, time, record, placeholders)
-        router.emit(new_tag, time, new_record) if new_tag
+        if new_tag
+          if @renew_time_key && new_record.has_key?(@renew_time_key)
+            time = new_record[@renew_time_key].to_i
+          end
+          router.emit(new_tag, time, new_record)
+        end
       }
       chain.next
     rescue => e
