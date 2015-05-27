@@ -17,7 +17,7 @@ module Fluent
     config_param :renew_time_key, :string, :default => nil
     config_param :enable_ruby, :bool, :default => true # true for lower version compatibility
 
-    BUILTIN_CONFIGURATIONS = %W(type tag output_tag remove_keys renew_record keep_keys enable_ruby)
+    BUILTIN_CONFIGURATIONS = %W(type tag output_tag remove_keys renew_record keep_keys enable_ruby renew_time_key)
 
     # To support log_level option implemented by Fluentd v0.10.43
     unless method_defined?(:log)
