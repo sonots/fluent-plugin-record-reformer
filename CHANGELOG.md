@@ -1,3 +1,9 @@
+## 0.6.2 (2015/05/27)
+
+Enhancements:
+
+* Add `renew_time_key` option (thanks to @tagomoris)
+
 ## 0.6.1 (2015/05/10)
 
 Enhancements:
