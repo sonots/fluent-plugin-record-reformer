@@ -1,3 +1,9 @@
+## 0.6.3 (2015/05/27)
+
+Fixes:
+
+* Fix not to include `renew_time_key` in records
+
 ## 0.6.2 (2015/05/27)
 
 Enhancements:
