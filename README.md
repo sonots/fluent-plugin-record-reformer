@@ -92,7 +92,7 @@ This results in same, but please note that following option parameters are reser
 
 - renew\_time\_key *string*
 
-    `renew_time_key foo` overwrite time of events with value of field `foo` if exist. The value of `foo` must be unix time.
+    `renew_time_key foo` overwrites the time of events with a value of the record field `foo` if exists. The value of `foo` must be a unix time.
 
 - keep_keys
 
