@@ -340,6 +340,23 @@ EOC
           end
         end
 
+        test "removing array values from existing field with enable_ruby #{enable_ruby}" do
+          config = %[
+            tag tag
+            enable_ruby #{enable_ruby}
+            <record>
+              array_field ${array_field} - ["${hostname}"]
+            </record>
+          ]
+          msgs = [
+            { 'array_field' => [@hostname, @tag] },
+          ]
+          es = emit(config, use_v1, msgs)
+          es.each_with_index do |(tag, time, record), i|
+            assert_equal([@tag], record['array_field'])
+          end
+        end
+
         test "array and hash values with placeholders with enable_ruby #{enable_ruby}" do
           config = %[
             tag tag
