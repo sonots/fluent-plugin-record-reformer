@@ -27,7 +27,12 @@ class RecordReformerOutputTest < Test::Unit::TestCase
     d = create_driver(config, use_v1)
     d.run do
       msgs.each do |msg|
-        d.emit({'eventType0' => 'bar', 'message' => msg}, @time)
+        record = {
+          'eventType0' => 'bar',
+          'message'    => msg,
+        }
+        record = record.merge(msg) if msg.is_a?(Hash)
+        d.emit(record, @time)
       end
     end
 
