@@ -323,6 +323,23 @@ EOC
           end
         end
 
+        test "adding array values to existing field with enable_ruby #{enable_ruby}" do
+          config = %[
+            tag tag
+            enable_ruby #{enable_ruby}
+            <record>
+              array_field ["${hostname}", "${tag}"]
+            </record>
+          ]
+          msgs = [
+            { 'array_field' => ['1', '2'] },
+          ]
+          es = emit(config, use_v1, msgs)
+          es.each_with_index do |(tag, time, record), i|
+            assert_equal(['1', '2', @hostname, @tag], record['array_field'])
+          end
+        end
+
         test "array and hash values with placeholders with enable_ruby #{enable_ruby}" do
           config = %[
             tag tag
