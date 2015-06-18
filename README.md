@@ -26,6 +26,7 @@ Example:
         input_tag ${tag}
         last_tag ${tag_parts[-1]}
         message ${message}, yay!
+        members ${members} + ["Bob"]
       </record>
     </match>
 
@@ -35,7 +36,8 @@ Assume following input is coming (indented):
 foo.bar {
   "remove_me":"bar",
   "not_remove_me":"bar",
-  "message":"Hello world!"
+  "message":"Hello world!",
+  "members":["Alice"]
 }
 ```
 
@@ -48,6 +50,7 @@ reformed.foo {
   "input_tag":"foo.bar",
   "last_tag":"bar",
   "message":"Hello world!, yay!",
+  "members":["Alice","Bob"],
 }
 ```
 
@@ -66,6 +69,7 @@ Example:
       input_tag ${tag}
       last_tag ${tag_parts[-1]}
       message ${message}, yay!
+      members ${members} + ["Bob"]
     </match>
 
 This results in same, but please note that following option parameters are reserved, so can not be used as a record key.
@@ -144,6 +148,17 @@ It is also possible to write a ruby code in placeholders if you set `enable_ruby
 * ${tag\_parts.last}
 
 but, please note that enabling ruby codes is not encouraged by security reasons and also in terms of the performance.
+
+## Modification of array fields
+
+There are special syntax to modify existing array fields:
+
+* `${field_name} + ["to be added 1", "to be added 2"]`
+  will construct a new array with added elements.
+* `${field_name} - ["to be removed 1", "to be removed 2"]`
+  will construct a new array without specified elements.
+
+Note that the left-hand will be converted to an array automatically, if the existing field is not an array type.
 
 ## Relatives
 

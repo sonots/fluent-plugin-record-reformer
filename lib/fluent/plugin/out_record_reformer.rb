@@ -112,7 +112,15 @@ module Fluent
       if value_str.start_with?('{', '[')
         JSON.parse(value_str)
       else
+        matched = value_str.match(/\A(\$\{[^}]+\})\s*([-+])\s*(\[.*\])\z/)
+        if matched
+          field    = matched[1]
+          operator = matched[2]
+          values   = matched[3]
+          ArrayReformer.new(field, operator, JSON.parse(values))
+        else
         value_str
+        end
       end
     rescue => e
       log.warn "failed to parse #{value_str} as json. Assuming #{value_str} is a string", :error_class => e.class, :error => e.message
@@ -144,6 +152,11 @@ module Fluent
         value.each_with_index do |v, i|
           new_value[i] = expand_placeholders(v)
         end
+      elsif value.is_a?(ArrayReformer)
+        expanded_values = value.values.map do |v|
+          expand_placeholders(v)
+        end
+        new_value = @placeholder_expander.expand_array(value, expanded_values)
       else
         new_value = value
       end
@@ -167,6 +180,39 @@ module Fluent
         rev_tag_suffix[i] = "#{rev_tag_parts[i]}.#{rev_tag_suffix[i-1]}"
       end
       rev_tag_suffix.reverse!
+    end
+
+    class ArrayReformer
+      attr_reader :source_field, :operator, :values
+
+      SUPPORTED_OPERATORS = ["+", "-"]
+
+      def initialize(source_field, operator, values)
+        @source_field = source_field
+        @operator     = operator
+        @values       = values
+        validate
+      end
+
+      def apply(base, values)
+        base = [base] unless base.is_a?(Array)
+        case @operator
+        when "+"
+          base + values
+        when "-"
+          base - values
+        end
+      end
+
+      private
+      def validate
+        unless SUPPORTED_OPERATORS.include?(@operator)
+          raise Fluent::ConfigError, "out_record_reformer: unknown operator: #{@operator}"
+        end
+        unless @values.is_a?(Array)
+          raise Fluent::ConfigError, "out_record_reformer: invalid array: #{@values}"
+        end
+      end
     end
 
     class PlaceholderExpander
@@ -201,6 +247,11 @@ module Fluent
           @placeholders[$1]
         }
       end
+
+      def expand_array(reformer, values)
+        base = @placeholders[reformer.source_field] || []
+        reformer.apply(base, values)
+      end
     end
 
     class RubyPlaceholderExpander
@@ -232,6 +283,16 @@ module Fluent
         log.warn "record_reformer: failed to expand `#{str}`", :error_class => e.class, :error => e.message
         log.warn_backtrace
         nil
+      end
+
+      def expand_array(reformer, values)
+        base = expand(reformer.source_field)
+        begin
+          base = JSON.parse(base)
+        rescue JSON::ParserError
+        end
+        base ||= []
+        reformer.apply(base, values)
       end
 
       class UndefOpenStruct < OpenStruct
