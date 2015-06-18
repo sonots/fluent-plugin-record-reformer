@@ -338,11 +338,22 @@ EOC
           ]
           msgs = [
             { 'array_field' => ['1', '2'] },
+            { 'array_field' => [] },
+            { 'array_field' => 'not_array' },
+            { 'array_field' => nil },
+          ]
+          expected_results = [
+            ['1', '2', @hostname, @tag],
+            [@hostname, @tag],
+            ['not_array', @hostname, @tag],
+            [@hostname, @tag],
           ]
           es = emit(config, use_v1, msgs)
+          actual_results = []
           es.each_with_index do |(tag, time, record), i|
-            assert_equal(['1', '2', @hostname, @tag], record['array_field'])
+            actual_results << record['array_field']
           end
+          assert_equal(expected_results, actual_results)
         end
 
         test "removing array values from existing field with enable_ruby #{enable_ruby}" do
@@ -355,11 +366,22 @@ EOC
           ]
           msgs = [
             { 'array_field' => [@hostname, @tag] },
+            { 'array_field' => [] },
+            { 'array_field' => 'not_array' },
+            { 'array_field' => nil },
+          ]
+          expected_results = [
+            [@tag],
+            [],
+            ['not_array'],
+            [],
           ]
           es = emit(config, use_v1, msgs)
+          actual_results = []
           es.each_with_index do |(tag, time, record), i|
-            assert_equal([@tag], record['array_field'])
+            actual_results << record['array_field']
           end
+          assert_equal(expected_results, actual_results)
         end
 
         test "array and hash values with placeholders with enable_ruby #{enable_ruby}" do
