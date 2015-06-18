@@ -342,11 +342,12 @@ EOC
             { 'array_field' => 'not_array' },
             { 'array_field' => nil },
           ]
+          parsed_nil_field = enable_ruby == 'yes' ? [''] : []
           expected_results = [
             ['1', '2', @hostname, @tag],
             [@hostname, @tag],
             ['not_array', @hostname, @tag],
-            [@hostname, @tag],
+            parsed_nil_field + [@hostname, @tag],
           ]
           es = emit(config, use_v1, msgs)
           actual_results = []
@@ -370,11 +371,12 @@ EOC
             { 'array_field' => 'not_array' },
             { 'array_field' => nil },
           ]
+          parsed_nil_field = enable_ruby == 'yes' ? [''] : []
           expected_results = [
             [@tag],
             [],
             ['not_array'],
-            [],
+            parsed_nil_field + [],
           ]
           es = emit(config, use_v1, msgs)
           actual_results = []
