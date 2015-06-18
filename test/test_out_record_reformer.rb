@@ -328,7 +328,7 @@ EOC
             tag tag
             enable_ruby #{enable_ruby}
             <record>
-              array_field ["${hostname}", "${tag}"]
+              array_field ${array_field} + ["${hostname}", "${tag}"]
             </record>
           ]
           msgs = [
