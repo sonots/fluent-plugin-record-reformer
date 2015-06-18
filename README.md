@@ -149,6 +149,17 @@ It is also possible to write a ruby code in placeholders if you set `enable_ruby
 
 but, please note that enabling ruby codes is not encouraged by security reasons and also in terms of the performance.
 
+## Modification of array fields
+
+There are special syntax to modify existing array fields:
+
+* `${field_name} + ["to be added 1", "to be added 2"]`
+  will construct a new array with added elements.
+* `${field_name} - ["to be removed 1", "to be removed 2"]`
+  will construct a new array without specified elements.
+
+Note that the left-hand will be converted to an array automatically, if the existing field is not an array type.
+
 ## Relatives
 
 Following plugins look similar:
