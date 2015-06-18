@@ -26,6 +26,7 @@ Example:
         input_tag ${tag}
         last_tag ${tag_parts[-1]}
         message ${message}, yay!
+        members ${members} + ["Bob"]
       </record>
     </match>
 
@@ -35,7 +36,8 @@ Assume following input is coming (indented):
 foo.bar {
   "remove_me":"bar",
   "not_remove_me":"bar",
-  "message":"Hello world!"
+  "message":"Hello world!",
+  "members":["Alice"]
 }
 ```
 
@@ -48,6 +50,7 @@ reformed.foo {
   "input_tag":"foo.bar",
   "last_tag":"bar",
   "message":"Hello world!, yay!",
+  "members":["Alice","Bob"],
 }
 ```
 
@@ -66,6 +69,7 @@ Example:
       input_tag ${tag}
       last_tag ${tag_parts[-1]}
       message ${message}, yay!
+      members ${members} + ["Bob"]
     </match>
 
 This results in same, but please note that following option parameters are reserved, so can not be used as a record key.
