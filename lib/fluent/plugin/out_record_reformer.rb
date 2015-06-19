@@ -18,7 +18,7 @@ module Fluent
     config_param :enable_ruby, :bool, :default => true # true for lower version compatibility
     config_param :auto_typecast, :bool, :default => false # false for lower version compatibility
 
-    BUILTIN_CONFIGURATIONS = %W(type tag output_tag remove_keys renew_record keep_keys enable_ruby renew_time_key)
+    BUILTIN_CONFIGURATIONS = %W(type tag output_tag remove_keys renew_record keep_keys enable_ruby renew_time_key auto_typecast)
 
     # To support log_level option implemented by Fluentd v0.10.43
     unless method_defined?(:log)
