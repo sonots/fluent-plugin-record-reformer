@@ -246,7 +246,14 @@ module Fluent
       # Replace placeholders in a string
       #
       # @param [String] str         the string to be replaced
-      def expand(str)
+      def expand(str, force_stringify=false)
+        if @autodetect_value_type and !force_stringify
+          single_placeholder_matched = str.match(/\A\${([^}]+)}\z/)
+          if single_placeholder_matched
+            code = single_placeholder_matched[1]
+            return eval code, @placeholders.instance_eval { binding }
+          end
+        end
         interpolated = str.gsub(/\$\{([^}]+)\}/, '#{\1}') # ${..} => #{..}
         eval "\"#{interpolated}\"", @placeholders.instance_eval { binding }
       rescue => e
