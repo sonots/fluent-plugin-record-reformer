@@ -105,6 +105,25 @@ This results in same, but please note that following option parameters are reser
     Enable to use ruby codes in placeholders. See `Placeholders` section.
     Default is `true` (just for lower version compatibility). 
 
+- auto_typecast *bool*
+
+    Automatically cast the field types. Default is false.
+    NOTE: This option is effective only for field values comprised of a single placeholder. 
+
+    Effective Examples:
+    
+        foo ${foo}
+    
+    Non-Effective Examples:
+    
+        foo ${foo}${bar}
+        foo ${foo}bar
+        foo 1
+    
+    Internally, this **keeps** the type of value if the value text is comprised of a single placeholder, otherwise, values are treated as strings. 
+    
+    When you need to cast field types manually, [out_typecast](https://github.com/tarom/fluent-plugin-typecast) and [filter_typecast](https://github.com/sonots/fluent-plugin-filter_typecast) are available. 
+
 ## Placeholders
 
 The keys of input json are available as placeholders. In the above example, 
