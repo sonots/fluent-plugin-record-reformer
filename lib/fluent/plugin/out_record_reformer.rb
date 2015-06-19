@@ -202,7 +202,7 @@ module Fluent
       end
 
       def expand(str, force_stringify=false)
-        if !force_stringify and @autodetect_value_type
+        if @autodetect_value_type and !force_stringify
           single_placeholder_matched = str.match(/\A(\${[^}]+}|__[A-Z_]+__)\z/)
           if single_placeholder_matched
             log_unknown_placeholder($1)
