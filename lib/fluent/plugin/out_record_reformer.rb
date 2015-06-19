@@ -142,7 +142,7 @@ module Fluent
       elsif value.is_a?(Hash)
         new_value = {}
         value.each_pair do |k, v|
-          new_value[@placeholder_expander.expand(k)] = expand_placeholders(v)
+          new_value[@placeholder_expander.expand(k, true)] = expand_placeholders(v)
         end
       elsif value.is_a?(Array)
         new_value = []
@@ -201,11 +201,25 @@ module Fluent
         @placeholders = placeholders
       end
 
-      def expand(str)
+      def expand(str, force_stringify=false)
+        if !force_stringify and @autodetect_value_type
+          single_placeholder_matched = str.match(/\A(\${[^}]+}|__[A-Z_]+__)\z/)
+          if single_placeholder_matched
+            log_unknown_placeholder($1)
+            return @placeholders[single_placeholder_matched[1]]
+          end
+        end
         str.gsub(/(\${[^}]+}|__[A-Z_]+__)/) {
-          log.warn "record_reformer: unknown placeholder `#{$1}` found" unless @placeholders.include?($1)
+          log_unknown_placeholder($1)
           @placeholders[$1]
         }
+      end
+
+      private
+      def log_unknown_placeholder(placeholder)
+        unless @placeholders.include?(placeholder)
+          log.warn "record_reformer: unknown placeholder `#{placeholder}` found"
+        end
       end
     end
 
