@@ -16,7 +16,7 @@ module Fluent
     config_param :renew_record, :bool, :default => false
     config_param :renew_time_key, :string, :default => nil
     config_param :enable_ruby, :bool, :default => true # true for lower version compatibility
-    config_param :autodetect_field_type, :bool, :default => false # false for lower version compatibility
+    config_param :autodetect_value_type, :bool, :default => false # false for lower version compatibility
 
     BUILTIN_CONFIGURATIONS = %W(type tag output_tag remove_keys renew_record keep_keys enable_ruby renew_time_key)
 

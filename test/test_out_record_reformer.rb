@@ -363,11 +363,11 @@ EOC
           end
         end
 
-        test "disabled autodetectction of field type with enable_ruby #{enable_ruby}" do
+        test "disabled autodetectction of value type with enable_ruby #{enable_ruby}" do
           config = %[
             tag tag
             enable_ruby #{enable_ruby}
-            autodetect_field_type false
+            autodetect_value_type false
             <record>
               single      ${source}
               multiple    ${source}${source}
@@ -417,11 +417,11 @@ EOC
           assert_equal(expected_results, actual_results)
         end
 
-        test "enabled autodetectction of field type with enable_ruby #{enable_ruby}" do
+        test "enabled autodetectction of value type with enable_ruby #{enable_ruby}" do
           config = %[
             tag tag
             enable_ruby #{enable_ruby}
-            autodetect_field_type true
+            autodetect_value_type true
             <record>
               single      ${source}
               multiple    ${source}${source}
