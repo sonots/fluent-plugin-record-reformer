@@ -1,3 +1,9 @@
+## 0.7.0 (2015/06/19)
+
+Enhancements
+
+* Add `auto_typecast` option (thanks to @piroor)
+
 ## 0.6.3 (2015/05/27)
 
 Fixes:
