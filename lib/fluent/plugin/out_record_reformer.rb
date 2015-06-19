@@ -16,6 +16,7 @@ module Fluent
     config_param :renew_record, :bool, :default => false
     config_param :renew_time_key, :string, :default => nil
     config_param :enable_ruby, :bool, :default => true # true for lower version compatibility
+    config_param :auto_typecast, :bool, :default => false # false for lower version compatibility
 
     BUILTIN_CONFIGURATIONS = %W(type tag output_tag remove_keys renew_record keep_keys enable_ruby renew_time_key)
 
@@ -63,15 +64,19 @@ module Fluent
         raise Fluent::ConfigError, "out_record_reformer: `tag` must be specified"
       end
 
+      placeholder_expander_params = {
+        :log           => log,
+        :auto_typecast => @auto_typecast,
+      }
       @placeholder_expander =
         if @enable_ruby
           # require utilities which would be used in ruby placeholders
           require 'pathname'
           require 'uri'
           require 'cgi'
-          RubyPlaceholderExpander.new(log)
+          RubyPlaceholderExpander.new(placeholder_expander_params)
         else
-          PlaceholderExpander.new(log)
+          PlaceholderExpander.new(placeholder_expander_params)
         end
 
       @hostname = Socket.gethostname
@@ -137,7 +142,7 @@ module Fluent
       elsif value.is_a?(Hash)
         new_value = {}
         value.each_pair do |k, v|
-          new_value[@placeholder_expander.expand(k)] = expand_placeholders(v)
+          new_value[@placeholder_expander.expand(k, true)] = expand_placeholders(v)
         end
       elsif value.is_a?(Array)
         new_value = []
@@ -172,8 +177,9 @@ module Fluent
     class PlaceholderExpander
       attr_reader :placeholders, :log
 
-      def initialize(log)
-        @log = log
+      def initialize(params)
+        @log = params[:log]
+        @auto_typecast = params[:auto_typecast]
       end
 
       def prepare_placeholders(time, record, opts)
@@ -195,19 +201,34 @@ module Fluent
         @placeholders = placeholders
       end
 
-      def expand(str)
+      def expand(str, force_stringify=false)
+        if @auto_typecast and !force_stringify
+          single_placeholder_matched = str.match(/\A(\${[^}]+}|__[A-Z_]+__)\z/)
+          if single_placeholder_matched
+            log_unknown_placeholder($1)
+            return @placeholders[single_placeholder_matched[1]]
+          end
+        end
         str.gsub(/(\${[^}]+}|__[A-Z_]+__)/) {
-          log.warn "record_reformer: unknown placeholder `#{$1}` found" unless @placeholders.include?($1)
+          log_unknown_placeholder($1)
           @placeholders[$1]
         }
+      end
+
+      private
+      def log_unknown_placeholder(placeholder)
+        unless @placeholders.include?(placeholder)
+          log.warn "record_reformer: unknown placeholder `#{placeholder}` found"
+        end
       end
     end
 
     class RubyPlaceholderExpander
       attr_reader :placeholders, :log
 
-      def initialize(log)
-        @log = log
+      def initialize(params)
+        @log = params[:log]
+        @auto_typecast = params[:auto_typecast]
       end
 
       # Get placeholders as a struct
@@ -225,7 +246,14 @@ module Fluent
       # Replace placeholders in a string
       #
       # @param [String] str         the string to be replaced
-      def expand(str)
+      def expand(str, force_stringify=false)
+        if @auto_typecast and !force_stringify
+          single_placeholder_matched = str.match(/\A\${([^}]+)}\z/)
+          if single_placeholder_matched
+            code = single_placeholder_matched[1]
+            return eval code, @placeholders.instance_eval { binding }
+          end
+        end
         interpolated = str.gsub(/\$\{([^}]+)\}/, '#{\1}') # ${..} => #{..}
         eval "\"#{interpolated}\"", @placeholders.instance_eval { binding }
       rescue => e
