@@ -65,7 +65,7 @@ module Fluent
       end
 
       placeholder_expander_params = {
-        :log                   => log,
+        :log           => log,
         :auto_typecast => @auto_typecast,
       }
       @placeholder_expander =
