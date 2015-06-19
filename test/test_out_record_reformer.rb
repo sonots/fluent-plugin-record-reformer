@@ -367,7 +367,7 @@ EOC
           config = %[
             tag tag
             enable_ruby #{enable_ruby}
-            autodetect_value_type false
+            auto_typecast false
             <record>
               single      ${source}
               multiple    ${source}${source}
@@ -421,7 +421,7 @@ EOC
           config = %[
             tag tag
             enable_ruby #{enable_ruby}
-            autodetect_value_type true
+            auto_typecast true
             <record>
               single      ${source}
               multiple    ${source}${source}

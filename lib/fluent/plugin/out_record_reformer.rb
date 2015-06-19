@@ -16,7 +16,7 @@ module Fluent
     config_param :renew_record, :bool, :default => false
     config_param :renew_time_key, :string, :default => nil
     config_param :enable_ruby, :bool, :default => true # true for lower version compatibility
-    config_param :autodetect_value_type, :bool, :default => false # false for lower version compatibility
+    config_param :auto_typecast, :bool, :default => false # false for lower version compatibility
 
     BUILTIN_CONFIGURATIONS = %W(type tag output_tag remove_keys renew_record keep_keys enable_ruby renew_time_key)
 
@@ -66,7 +66,7 @@ module Fluent
 
       placeholder_expander_params = {
         :log                   => log,
-        :autodetect_value_type => @autodetect_value_type,
+        :auto_typecast => @auto_typecast,
       }
       @placeholder_expander =
         if @enable_ruby
@@ -179,7 +179,7 @@ module Fluent
 
       def initialize(params)
         @log = params[:log]
-        @autodetect_value_type = params[:autodetect_value_type]
+        @auto_typecast = params[:auto_typecast]
       end
 
       def prepare_placeholders(time, record, opts)
@@ -202,7 +202,7 @@ module Fluent
       end
 
       def expand(str, force_stringify=false)
-        if @autodetect_value_type and !force_stringify
+        if @auto_typecast and !force_stringify
           single_placeholder_matched = str.match(/\A(\${[^}]+}|__[A-Z_]+__)\z/)
           if single_placeholder_matched
             log_unknown_placeholder($1)
@@ -228,7 +228,7 @@ module Fluent
 
       def initialize(params)
         @log = params[:log]
-        @autodetect_value_type = params[:autodetect_value_type]
+        @auto_typecast = params[:auto_typecast]
       end
 
       # Get placeholders as a struct
@@ -247,7 +247,7 @@ module Fluent
       #
       # @param [String] str         the string to be replaced
       def expand(str, force_stringify=false)
-        if @autodetect_value_type and !force_stringify
+        if @auto_typecast and !force_stringify
           single_placeholder_matched = str.match(/\A\${([^}]+)}\z/)
           if single_placeholder_matched
             code = single_placeholder_matched[1]
