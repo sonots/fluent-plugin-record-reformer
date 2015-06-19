@@ -64,15 +64,19 @@ module Fluent
         raise Fluent::ConfigError, "out_record_reformer: `tag` must be specified"
       end
 
+      placeholder_expander_params = {
+        :log                   => log,
+        :autodetect_value_type => @autodetect_value_type,
+      }
       @placeholder_expander =
         if @enable_ruby
           # require utilities which would be used in ruby placeholders
           require 'pathname'
           require 'uri'
           require 'cgi'
-          RubyPlaceholderExpander.new(log)
+          RubyPlaceholderExpander.new(placeholder_expander_params)
         else
-          PlaceholderExpander.new(log)
+          PlaceholderExpander.new(placeholder_expander_params)
         end
 
       @hostname = Socket.gethostname
@@ -173,8 +177,9 @@ module Fluent
     class PlaceholderExpander
       attr_reader :placeholders, :log
 
-      def initialize(log)
-        @log = log
+      def initialize(params)
+        @log = params[:log]
+        @autodetect_value_type = params[:autodetect_value_type]
       end
 
       def prepare_placeholders(time, record, opts)
@@ -207,8 +212,9 @@ module Fluent
     class RubyPlaceholderExpander
       attr_reader :placeholders, :log
 
-      def initialize(log)
-        @log = log
+      def initialize(params)
+        @log = params[:log]
+        @autodetect_value_type = params[:autodetect_value_type]
       end
 
       # Get placeholders as a struct
