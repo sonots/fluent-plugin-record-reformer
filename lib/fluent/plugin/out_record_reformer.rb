@@ -9,22 +9,22 @@ module Fluent
       super
     end
 
-    desc 'The output tag name. This option is deprecated. Use `tag` option instead.'
-    config_param :output_tag, :string, :default => nil # obsolete
-    desc 'The output tag name.'
-    config_param :tag, :string, :default => nil
-    desc 'Specify record keys to be removed by a string separated by , (comma).'
-    config_param :remove_keys, :string, :default => nil
-    desc 'Specify record keys to be kept by a string separated by , (comma).'
-    config_param :keep_keys, :string, :default => nil
-    desc 'Creates an output record newly without extending (merging) the input record fields.'
-    config_param :renew_record, :bool, :default => false
-    desc 'Overwrites the time of events with a value of the record field.'
-    config_param :renew_time_key, :string, :default => nil
-    desc 'Enable to use ruby codes in placeholders.'
-    config_param :enable_ruby, :bool, :default => true # true for lower version compatibility
-    desc 'Automatically cast the field types.'
-    config_param :auto_typecast, :bool, :default => false # false for lower version compatibility
+    config_param :output_tag, :string, :default => nil, # obsolete
+                 :desc => 'The output tag name. This option is deprecated. Use `tag` option instead.'
+    config_param :tag, :string, :default => nil,
+                 :desc => 'The output tag name.'
+    config_param :remove_keys, :string, :default => nil,
+                 :desc => 'Specify record keys to be removed by a string separated by , (comma).'
+    config_param :keep_keys, :string, :default => nil,
+                 :desc => 'Specify record keys to be kept by a string separated by , (comma).'
+    config_param :renew_record, :bool, :default => false,
+                 :desc => 'Creates an output record newly without extending (merging) the input record fields.'
+    config_param :renew_time_key, :string, :default => nil,
+                 :desc => 'Overwrites the time of events with a value of the record field.'
+    config_param :enable_ruby, :bool, :default => true, # true for lower version compatibility
+                 :desc => 'Enable to use ruby codes in placeholders.'
+    config_param :auto_typecast, :bool, :default => false, # false for lower version compatibility
+                 :desc => 'Automatically cast the field types.'
 
     BUILTIN_CONFIGURATIONS = %W(type tag output_tag remove_keys renew_record keep_keys enable_ruby renew_time_key auto_typecast)
 
