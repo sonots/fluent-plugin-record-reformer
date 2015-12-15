@@ -1,3 +1,9 @@
+## 0.7.1 (2015/12/16)
+
+Enhancements
+
+* Add @id, @type, @label to BUILTIN_CONFIGURATIONS not to map into records (thanks to TrickyMonkey)
+
 ## 0.7.0 (2015/06/19)
 
 Enhancements
