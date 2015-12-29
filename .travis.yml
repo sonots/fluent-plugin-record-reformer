@@ -5,3 +5,4 @@ rvm:
   - 2.2.*
 gemfile:
   - Gemfile
+before_script: gem update bundler
