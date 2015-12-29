@@ -1,3 +1,9 @@
+## 0.7.2 (2015/12/29)
+
+Enhancements
+
+* Add desc to options (thanks to cosmo0920)
+
 ## 0.7.1 (2015/12/16)
 
 Enhancements
