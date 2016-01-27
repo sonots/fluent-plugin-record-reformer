@@ -470,6 +470,28 @@ EOC
           end
           assert_equal(expected_results, actual_results)
         end
+
+        test %Q[record["key"] with enable_ruby #{enable_ruby}] do
+          config = %[
+            tag tag
+            enable_ruby #{enable_ruby}
+            auto_typecast true
+            <record>
+              _timestamp ${record["@timestamp"]}
+              _foo_bar   ${record["foo.bar"]}
+            </record>
+          ]
+          d = create_driver(config, use_v1)
+          record = {
+            "foo.bar"    => "foo.bar",
+            "@timestamp" => 10,
+          }
+          es = emit(config, use_v1, [record])
+          es.each_with_index do |(tag, time, r), i|
+            assert { r['_timestamp'] == record['@timestamp'] }
+            assert { r['_foo_bar'] == record['foo.bar'] }
+          end
+        end
       end
 
       test 'unknown placeholder (enable_ruby no)' do
@@ -495,7 +517,7 @@ EOC
           </record>
         ]
         d = create_driver(config, use_v1)
-        mock(d.instance.log).warn("record_reformer: failed to expand `${unknown['bar']}`", anything)
+        mock(d.instance.log).warn("record_reformer: failed to expand `%Q[\#{unknown['bar']}]`", anything)
         d.run { d.emit({}, @time) }
         # emit, but nil value
         assert_equal 1, d.emits.size
@@ -510,7 +532,7 @@ EOC
           enable_ruby yes
         ]
         d = create_driver(config, use_v1)
-        mock(d.instance.log).warn("record_reformer: failed to expand `${unknown['bar']}`", anything)
+        mock(d.instance.log).warn("record_reformer: failed to expand `%Q[\#{unknown['bar']}]`", anything)
         d.run { d.emit({}, @time) }
         # nil tag message should not be emitted
         assert_equal 0, d.emits.size
@@ -546,6 +568,39 @@ EOC
         d.emits.each do |(tag, time, record)|
           assert_equal message["@timestamp"], record["foo"]
         end
+      end
+    end
+
+    test "compatibility test (enable_ruby yes) (use_v1 #{use_v1})" do
+      config = %[
+        tag tag
+        enable_ruby yes
+        auto_typecast yes
+        <record>
+          _message   prefix-${message}-suffix
+          _time      ${Time.at(time)}
+          _number    ${number == '-' ? 0 : number}
+          _match     ${/0x[0-9a-f]+/.match(hex)[0]}
+          _timestamp ${__send__("@timestamp")}
+          _foo_bar   ${__send__('foo.bar')}
+        </record>
+      ]
+      d = create_driver(config, use_v1)
+      record = {
+        "number"     => "-",
+        "hex"        => "0x10",
+        "foo.bar"    => "foo.bar",
+        "@timestamp" => 10,
+        "message"    => "10",
+      }
+      es = emit(config, use_v1, [record])
+      es.each_with_index do |(tag, time, r), i|
+        assert { r['_message'] == "prefix-#{record['message']}-suffix" }
+        assert { r['_time'] == Time.at(@time) }
+        assert { r['_number'] == 0 }
+        assert { r['_match'] == record['hex'] }
+        assert { r['_timestamp'] == record['@timestamp'] }
+        assert { r['_foo_bar'] == record['foo.bar'] }
       end
     end
   end
