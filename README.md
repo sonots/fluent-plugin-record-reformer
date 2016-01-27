@@ -126,14 +126,10 @@ This results in same, but please note that following option parameters are reser
 
 ## Placeholders
 
-The keys of input json are available as placeholders. In the above example, 
+Following placeholders are available:
 
-* ${remove_me}
-* ${not_remove_me}
-* ${message}
-
-shall be available. In addition, following placeholders are reserved: 
-
+* ${record["key"]} Record value of `key` such as `${record["message"]}` in the above example (available from v0.8.0).
+  * Originally, record placeholders were available as `${key}` such as `${message}`. This is still kept for the backward compatibility, but would be removed in the future.
 * ${hostname} Hostname of the running machine
 * ${tag} Input tag
 * ${time} Time of the event
