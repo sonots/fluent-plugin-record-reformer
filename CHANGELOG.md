@@ -1,3 +1,10 @@
+## 0.8.0 (2016/01/28)
+
+Enhancements
+
+* Support `${record["key"]}` placeholder
+* Speed up `enable_ruby true`
+
 ## 0.7.2 (2015/12/29)
 
 Enhancements
