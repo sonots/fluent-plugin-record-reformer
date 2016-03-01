@@ -554,6 +554,24 @@ EOC
         end
       end
 
+      # https://github.com/sonots/fluent-plugin-record-reformer/issues/35
+      test 'auto_typecast placeholder containing {} (enable_ruby yes)' do
+        config = %[
+          tag tag
+          enable_ruby yes
+          auto_typecast yes
+          <record>
+            foo ${record.map{|k,v|v}}
+          </record>
+        ]
+        d = create_driver(config, use_v1)
+        message = {"@timestamp" => "foo"}
+        d.run { d.emit(message, @time) }
+        d.emits.each do |(tag, time, record)|
+          assert_equal [message["@timestamp"]], record["foo"]
+        end
+      end
+
       test 'expand fields starting with @ (enable_ruby yes)' do
         config = %[
           tag tag
