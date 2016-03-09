@@ -1,3 +1,13 @@
+## 0.8.1 (2016/03/09)
+
+Fixes
+
+* Fix to be thread-safe
+
+Changes
+
+* Relax conditions which auto_typecast is applied for enable_ruby yes
+
 ## 0.8.0 (2016/01/28)
 
 Enhancements
