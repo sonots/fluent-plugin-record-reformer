@@ -7,4 +7,8 @@ gemfile:
   - Gemfile
   - Gemfile.fluentd.0.12
   - Gemfile.fluentd.0.10
+matrix:
+  exclude:
+    - rvm: 2.0.*
+      gemfile: Gemfile
 before_install: gem update bundler
