@@ -1,7 +1,5 @@
 require_relative 'helper'
-require 'rr'
 require 'time'
-require 'timecop'
 require 'fluent/plugin/out_record_reformer'
 
 Fluent::Test.setup

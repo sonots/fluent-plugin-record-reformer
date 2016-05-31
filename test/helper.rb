@@ -1,4 +1,6 @@
 require 'test/unit'
+require 'test/unit/rr'
+require 'timecop'
 require 'fluent/log'
 require 'fluent/test'
 

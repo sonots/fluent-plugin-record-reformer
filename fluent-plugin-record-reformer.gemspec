@@ -22,6 +22,6 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "pry"
   gem.add_development_dependency "pry-nav"
   gem.add_development_dependency "test-unit"
-  gem.add_development_dependency "rr"
+  gem.add_development_dependency "test-unit-rr"
   gem.add_development_dependency "timecop"
 end
