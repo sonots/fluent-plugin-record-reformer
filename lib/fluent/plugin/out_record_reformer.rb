@@ -209,6 +209,7 @@ module Fluent
 
       def prepare_placeholders(placeholder_values)
         placeholders = {}
+        reserved_keys = Set.new(placeholder_values.keys)
 
         placeholder_values.each do |key, value|
           if value.kind_of?(Array) # tag_parts, etc
@@ -219,7 +220,9 @@ module Fluent
             end
           elsif value.kind_of?(Hash) # record, etc
             value.each do |k, v|
-              placeholders.store("${#{k}}", v) unless placeholder_values.key?(k) # foo (Prevent overriding the reserved placeholders with 'unless' check)
+              unless reserved_keys.include?(k) # prevent overwriting the reserved keys such as tag
+                placeholders.store("${#{k}}", v)
+              end
               placeholders.store(%Q[${#{key}["#{k}"]}], v) # record["foo"]
             end
           else # string, interger, float, and others?

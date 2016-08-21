@@ -24,13 +24,11 @@ class RecordReformerOutputTest < Test::Unit::TestCase
   def emit(config, use_v1, msgs = [''])
     d = create_driver(config, use_v1)
     d.run do
-      msgs.each do |msg|
-        record = {
-          'eventType0' => 'bar',
-          'message'    => msg,
-          'tag'        => 'baz',
-        }
-        record = record.merge(msg) if msg.is_a?(Hash)
+      records = msgs.map do |msg|
+        next msg if msg.is_a?(Hash)
+        { 'eventType0' => 'bar', 'message' => msg }
+      end
+      records.each do |record|
         d.emit(record, @time)
       end
     end
@@ -294,6 +292,29 @@ EOC
             assert_not_include(record, 'eventType0')
             assert_equal("bar", record['eventtype'])
             assert_equal("bar #{msgs[i]}", record['message'])
+          end
+        end
+
+        test "Prevent overriting reserved keys (such as tag, etc) #40 with enable_ruby #{enable_ruby}" do
+          config = %[
+            tag tag
+            enable_ruby #{enable_ruby}
+            <record>
+              new_tag ${tag}
+              new_time ${time}
+              new_record_tag ${record["tag"]}
+              new_record_time ${record["time"]}
+            </record>
+          ]
+          records = [{'tag' => 'tag', 'time' => 'time'}]
+          emits = emit(config, use_v1, records)
+          emits.each do |(tag, time, record)|
+            assert_not_equal('tag', record['new_tag'])
+            assert_equal(@tag, record['new_tag'])
+            assert_not_equal('time', record['new_time'])
+            assert_equal(@time.to_s, record['new_time'])
+            assert_equal('tag', record['new_record_tag'])
+            assert_equal('time', record['new_record_time'])
           end
         end
 
