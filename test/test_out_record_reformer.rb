@@ -28,6 +28,7 @@ class RecordReformerOutputTest < Test::Unit::TestCase
         record = {
           'eventType0' => 'bar',
           'message'    => msg,
+          'tag'        => 'baz',
         }
         record = record.merge(msg) if msg.is_a?(Hash)
         d.emit(record, @time)

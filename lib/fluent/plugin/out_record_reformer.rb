@@ -219,7 +219,7 @@ module Fluent
             end
           elsif value.kind_of?(Hash) # record, etc
             value.each do |k, v|
-              placeholders.store("${#{k}}", v) # foo
+              placeholders.store("${#{k}}", v) unless placeholder_values.key?(k) # foo (Prevent overriding the reserved placeholders with 'unless' check)
               placeholders.store(%Q[${#{key}["#{k}"]}], v) # record["foo"]
             end
           else # string, interger, float, and others?
