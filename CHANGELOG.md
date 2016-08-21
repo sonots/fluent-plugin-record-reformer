@@ -1,3 +1,9 @@
+## 0.8.2 (2016/08/21)
+
+Fixes
+
+* Prevent overwriting reserved placeholder keys such as tag, time, etc with `enable_ruby false` (thanks to @kimamula)
+
 ## 0.8.1 (2016/03/09)
 
 Fixes
