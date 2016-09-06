@@ -173,7 +173,7 @@ EOC
 EOC
         times = [ Time.local(2,2,3,4,5,2010,nil,nil,nil,nil), Time.local(3,2,3,4,5,2010,nil,nil,nil,nil) ]
         msgs = times.map{|t| t.to_s }
-        emits = emit(config, use_v1, msgs)
+        emits = emit(config, syntax, msgs)
         emits.each_with_index do |(tag, time, record), i|
           assert_equal("reformed.#{@tag}", tag)
           assert_equal(times[i].to_i, time)

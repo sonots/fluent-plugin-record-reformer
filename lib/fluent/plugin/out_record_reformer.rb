@@ -31,16 +31,6 @@ module Fluent
 
     BUILTIN_CONFIGURATIONS = %W(@id @type @label type tag output_tag remove_keys renew_record keep_keys enable_ruby renew_time_key auto_typecast)
 
-    # To support log_level option implemented by Fluentd v0.10.43
-    unless method_defined?(:log)
-      define_method("log") { $log }
-    end
-
-    # Define `router` method of v0.12 to support v0.10 or earlier
-    unless method_defined?(:router)
-      define_method("router") { Fluent::Engine }
-    end
-
     def configure(conf)
       super
 
