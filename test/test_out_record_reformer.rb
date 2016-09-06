@@ -44,7 +44,7 @@ class RecordReformerOutputTest < Test::Unit::TestCase
     hostname ${hostname}
     input_tag ${tag}
     time ${time.to_s}
-    message ${hostname} ${tag_parts.last} ${URI.escape(message)}
+    message ${hostname} ${tag_parts.last} ${URI.encode_www_form_component(message)}
   ]
 
   [:v0, :v1].each do |syntax|
