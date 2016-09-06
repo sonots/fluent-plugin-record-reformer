@@ -1,8 +1,11 @@
 require 'ostruct'
+require 'fluent/plugin/output'
 
 module Fluent
-  class RecordReformerOutput < Output
+  class Plugin::RecordReformerOutput < Plugin::Output
     Fluent::Plugin.register_output('record_reformer', self)
+
+    helpers :event_emitter
 
     def initialize
       require 'socket'
@@ -92,7 +95,7 @@ module Fluent
       @hostname = Socket.gethostname
     end
 
-    def emit(tag, es, chain)
+    def process(tag, es)
       tag_parts = tag.split('.')
       tag_prefix = tag_prefix(tag_parts)
       tag_suffix = tag_suffix(tag_parts)
@@ -120,7 +123,6 @@ module Fluent
           router.emit(new_tag, time, new_record)
         end
       }
-      chain.next
     rescue => e
       log.warn "record_reformer: #{e.class} #{e.message} #{e.backtrace.first}"
       log.debug "record_reformer: tag:#{@tag} map:#{@map} record:#{last_record} placeholder_values:#{placeholder_values}"
