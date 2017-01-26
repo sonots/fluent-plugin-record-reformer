@@ -146,14 +146,37 @@ class RecordReformerOutputTest < Test::Unit::TestCase
         config = <<EOC
     tag reformed.${tag}
     enable_ruby true
-    message ${Time.parse(message).to_i}
-    renew_time_key message
+    renew_time_key event_time_key
+    <record>
+      event_time_key ${Time.parse(record["message"]).to_i}
+    </record>
 EOC
         msgs = times.map{|t| t.to_s }
         emits = emit(config, use_v1, msgs)
         emits.each_with_index do |(tag, time, record), i|
           assert_equal("reformed.#{@tag}", tag)
           assert_equal(times[i].to_i, time)
+          assert_true(record.has_key?('event_time_key'))
+        end
+      end
+
+      test 'renew_time_key and remove_keys' do
+        config = <<EOC
+    tag reformed.${tag}
+    renew_time_key event_time_key
+    remove_keys event_time_key
+    auto_typecast true
+    <record>
+      event_time_key ${Time.parse(record["message"]).to_i}
+    </record>
+EOC
+        times = [ Time.local(2,2,3,4,5,2010,nil,nil,nil,nil), Time.local(3,2,3,4,5,2010,nil,nil,nil,nil) ]
+        msgs = times.map{|t| t.to_s }
+        emits = emit(config, use_v1, msgs)
+        emits.each_with_index do |(tag, time, record), i|
+          assert_equal("reformed.#{@tag}", tag)
+          assert_equal(times[i].to_i, time)
+          assert_false(record.has_key?('event_time_key'))
         end
       end
 
