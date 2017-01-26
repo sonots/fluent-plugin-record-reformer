@@ -1,3 +1,9 @@
+## 0.8.3 (2017/01/26)
+
+Fixes
+
+* Apply `remove_keys` last, otherwise, `renew_time_key` could be removed before generating new time
+
 ## 0.8.2 (2016/08/21)
 
 Fixes
