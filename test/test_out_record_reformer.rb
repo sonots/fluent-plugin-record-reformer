@@ -50,7 +50,7 @@ class RecordReformerOutputTest < Test::Unit::TestCase
     message ${hostname} ${tag_parts.last} ${URI.encode_www_form_component(message)}
   ]
 
-  [:v0, :v1].each do |syntax|
+  [:v1].each do |syntax|
     sub_test_case 'configure' do
       test 'typical usage' do
         assert_nothing_raised do
