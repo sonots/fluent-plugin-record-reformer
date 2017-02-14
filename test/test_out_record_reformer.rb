@@ -2,15 +2,18 @@ require_relative 'helper'
 require 'time'
 require 'fluent/test/driver/output'
 require 'fluent/plugin/out_record_reformer'
+require 'fluent/test/helpers'
 
 Fluent::Test.setup
 
 class RecordReformerOutputTest < Test::Unit::TestCase
+  include Fluent::Test::Helpers
+
   setup do
     @hostname = Socket.gethostname.chomp
     @tag = 'test.tag'
     @tag_parts = @tag.split('.')
-    @time = Time.local(1,2,3,4,5,2010,nil,nil,nil,nil).to_i
+    @time = event_time("2010-05-04 03:02:01")
     Timecop.freeze(@time)
   end
 
@@ -143,7 +146,7 @@ class RecordReformerOutputTest < Test::Unit::TestCase
       end
 
       test 'renew_time_key' do
-        times = [ Time.local(2,2,3,4,5,2010,nil,nil,nil,nil), Time.local(3,2,3,4,5,2010,nil,nil,nil,nil) ]
+        times = [ Time.at(event_time("2010-05-04 03:02:02")), Time.at(event_time("2010-05-04 03:02:03")) ]
         config = <<EOC
     tag reformed.${tag}
     enable_ruby true
@@ -171,7 +174,7 @@ EOC
       event_time_key ${Time.parse(record["message"]).to_i}
     </record>
 EOC
-        times = [ Time.local(2,2,3,4,5,2010,nil,nil,nil,nil), Time.local(3,2,3,4,5,2010,nil,nil,nil,nil) ]
+        times = [ Time.at(event_time("2010-05-04 03:02:02")), Time.at(event_time("2010-05-04 03:02:03")) ]
         msgs = times.map{|t| t.to_s }
         emits = emit(config, syntax, msgs)
         emits.each_with_index do |(tag, time, record), i|
