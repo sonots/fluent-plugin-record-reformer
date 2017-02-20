@@ -25,7 +25,7 @@ Example:
         hostname ${hostname}
         input_tag ${tag}
         last_tag ${tag_parts[-1]}
-        message ${message}, yay!
+        message ${record['message']}, yay!
       </record>
     </match>
 
@@ -65,7 +65,7 @@ Example:
       hostname ${hostname}
       input_tag ${tag}
       last_tag ${tag_parts[-1]}
-      message ${message}, yay!
+      message ${record['message']}, yay!
     </match>
 
 This results in same, but please note that following option parameters are reserved, so can not be used as a record key.
