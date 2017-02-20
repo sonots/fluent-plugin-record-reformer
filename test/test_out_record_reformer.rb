@@ -5,22 +5,6 @@ require 'fluent/plugin/out_record_reformer'
 Fluent::Test.setup
 
 class RecordReformerOutputTest < Test::Unit::TestCase
-  setup do
-    @hostname = Socket.gethostname.chomp
-    @tag = 'test.tag'
-    @tag_parts = @tag.split('.')
-    @time = Time.local(1,2,3,4,5,2010,nil,nil,nil,nil)
-    Timecop.freeze(@time)
-  end
-
-  teardown do
-    Timecop.return
-  end
-
-  def create_driver(conf, use_v1)
-    Fluent::Test::OutputTestDriver.new(Fluent::RecordReformerOutput, @tag).configure(conf, use_v1)
-  end
-
   def emit(config, use_v1, msgs = [''])
     d = create_driver(config, use_v1)
     d.run do
@@ -35,6 +19,18 @@ class RecordReformerOutputTest < Test::Unit::TestCase
 
     @instance = d.instance
     d.emits
+  end
+
+  setup do
+    @hostname = Socket.gethostname.chomp
+    @tag = 'test.tag'
+    @tag_parts = @tag.split('.')
+    @time = event_time("2010-05-04 03:02:01")
+    Timecop.freeze(@time)
+  end
+
+  teardown do
+    Timecop.return
   end
 
   CONFIG = %[
@@ -77,7 +73,7 @@ class RecordReformerOutputTest < Test::Unit::TestCase
           assert_equal('bar', record['eventType0'])
           assert_equal(@hostname, record['hostname'])
           assert_equal(@tag, record['input_tag'])
-          assert_equal(@time.to_s, record['time'])
+          assert_equal(Time.at(@time).localtime.to_s, record['time'])
           assert_equal("#{@hostname} #{@tag_parts[-1]} #{msgs[i]}", record['message'])
         end
       end
@@ -109,7 +105,7 @@ class RecordReformerOutputTest < Test::Unit::TestCase
           assert_equal('bar', record['eventType0'])
           assert_equal(@hostname, record['hostname'])
           assert_equal(@tag, record['tag'])
-          assert_equal(@time.to_s, record['time'])
+          assert_equal(Time.at(@time).localtime.to_s, record['time'])
           assert_equal("#{@hostname} #{@tag_parts[-1]} #{msgs[i]}", record['message'])
         end
       end
@@ -122,7 +118,7 @@ class RecordReformerOutputTest < Test::Unit::TestCase
           assert_not_include(record, 'eventType0')
           assert_equal(@hostname, record['hostname'])
           assert_equal(@tag, record['input_tag'])
-          assert_equal(@time.to_s, record['time'])
+          assert_equal(Time.at(@time).localtime.to_s, record['time'])
           assert_not_include(record, 'message')
         end
       end
@@ -136,13 +132,13 @@ class RecordReformerOutputTest < Test::Unit::TestCase
           assert_not_include(record, 'eventType0')
           assert_equal(@hostname, record['hostname'])
           assert_equal(@tag, record['input_tag'])
-          assert_equal(@time.to_s, record['time'])
+          assert_equal(Time.at(@time).localtime.to_s, record['time'])
           assert_equal("#{@hostname} #{@tag_parts[-1]} #{msgs[i]}", record['message'])
         end
       end
 
       test 'renew_time_key' do
-        times = [ Time.local(2,2,3,4,5,2010,nil,nil,nil,nil), Time.local(3,2,3,4,5,2010,nil,nil,nil,nil) ]
+        times = [ Time.at(event_time("2010-05-04 03:02:02")), Time.at(event_time("2010-05-04 03:02:03")) ]
         config = <<EOC
     tag reformed.${tag}
     enable_ruby true
@@ -170,7 +166,7 @@ EOC
       event_time_key ${Time.parse(record["message"]).to_i}
     </record>
 EOC
-        times = [ Time.local(2,2,3,4,5,2010,nil,nil,nil,nil), Time.local(3,2,3,4,5,2010,nil,nil,nil,nil) ]
+        times = [ Time.at(event_time("2010-05-04 03:02:02")), Time.at(event_time("2010-05-04 03:02:03")) ]
         msgs = times.map{|t| t.to_s }
         emits = emit(config, use_v1, msgs)
         emits.each_with_index do |(tag, time, record), i|
@@ -295,7 +291,7 @@ EOC
           ]
           emits = emit(config, use_v1)
           emits.each do |(tag, time, record)|
-            assert_equal(@time.to_s, record['message'])
+            assert_equal(Time.at(time).localtime.to_s, record['message'])
           end
         end
 
@@ -335,7 +331,7 @@ EOC
             assert_not_equal('tag', record['new_tag'])
             assert_equal(@tag, record['new_tag'])
             assert_not_equal('time', record['new_time'])
-            assert_equal(@time.to_s, record['new_time'])
+            assert_equal(Time.at(@time).localtime.to_s, record['new_time'])
             assert_equal('tag', record['new_record_tag'])
             assert_equal('time', record['new_record_time'])
           end
