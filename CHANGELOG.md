@@ -1,3 +1,9 @@
+## 0.9.0 (2017/02/21)
+
+Enhancements:
+
+* Use v0.14 API for fluentd v0.14
+
 ## 0.8.3 (2017/01/26)
 
 Fixes
