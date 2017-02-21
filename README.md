@@ -4,6 +4,12 @@
 
 Fluentd plugin to add or replace fields of a event record
 
+## Requirements
+
+See [.travis.yml](.travis.yml)
+
+Note that `fluent-plugin-record-reformer` supports both v0.14 API and v0.12 API in one gem.
+
 ## Installation
 
 Use RubyGems:
