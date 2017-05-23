@@ -21,7 +21,7 @@ Use RubyGems:
 Example:
 
     <match foo.**>
-      type record_reformer
+      @type record_reformer
       remove_keys remove_me
       renew_record false
       enable_ruby false
@@ -62,7 +62,7 @@ reformed.foo {
 Example:
 
     <match foo.**>
-      type record_reformer
+      @type record_reformer
       remove_keys remove_me
       renew_record false
       enable_ruby false
