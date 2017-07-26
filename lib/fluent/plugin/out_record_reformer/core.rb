@@ -82,10 +82,6 @@ module Fluent
       @hostname = Socket.gethostname
     end
 
-    def multi_workers_ready?
-      true
-    end
-
     def process(tag, es)
       tag_parts = tag.split('.')
       tag_prefix = tag_prefix(tag_parts)

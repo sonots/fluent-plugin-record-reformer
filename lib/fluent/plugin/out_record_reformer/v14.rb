@@ -15,6 +15,10 @@ module Fluent
       super
     end
 
+    def multi_workers_ready?
+      true
+    end
+
     def process(tag, es)
       super
     end
