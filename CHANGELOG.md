@@ -1,3 +1,9 @@
+## 0.9.1 (2017/07/26)
+
+Enhancements:
+
+* Support multi process workers of v0.14.12.
+
 ## 0.9.0 (2017/02/21)
 
 Enhancements:
