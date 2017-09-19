@@ -5,20 +5,20 @@ require 'fluent/plugin/out_record_reformer'
 Fluent::Test.setup
 
 class RecordReformerOutputTest < Test::Unit::TestCase
-  def feed(config, msgs: [''], syntax: :v1)
-    d = create_driver(config, syntax: syntax, default_tag: @tag)
+  def emit(config, use_v1, msgs = [''])
+    d = create_driver(config, use_v1)
     d.run do
       records = msgs.map do |msg|
         next msg if msg.is_a?(Hash)
         { 'eventType0' => 'bar', 'message' => msg }
       end
       records.each do |record|
-        d.feed(@time, record)
+        d.emit(record, @time)
       end
     end
 
     @instance = d.instance
-    d.events
+    d.emits
   end
 
   setup do
@@ -42,23 +42,23 @@ class RecordReformerOutputTest < Test::Unit::TestCase
     message ${hostname} ${tag_parts.last} ${URI.escape(message)}
   ]
 
-  [:v1, :v0].each do |syntax|
+  [true, false].each do |use_v1|
     sub_test_case 'configure' do
       test 'typical usage' do
         assert_nothing_raised do
-          create_driver(CONFIG, syntax: syntax)
+          create_driver(CONFIG, use_v1)
         end
       end
 
       test "tag is not specified" do
         assert_raise(Fluent::ConfigError) do
-          create_driver('', syntax: syntax)
+          create_driver('', use_v1)
         end
       end
 
       test "keep_keys must be specified together with renew_record true" do
         assert_raise(Fluent::ConfigError) do
-          create_driver(%[keep_keys a], syntax: syntax)
+          create_driver(%[keep_keys a], use_v1)
         end
       end
     end
@@ -66,9 +66,9 @@ class RecordReformerOutputTest < Test::Unit::TestCase
     sub_test_case "test options" do
       test 'typical usage' do
         msgs = ['1', '2']
-        events = feed(CONFIG, syntax: syntax, msgs: msgs)
-        assert_equal 2, events.size
-        events.each_with_index do |(tag, time, record), i|
+        emits = emit(CONFIG, use_v1, msgs)
+        assert_equal 2, emits.size
+        emits.each_with_index do |(tag, time, record), i|
           assert_equal("reformed.#{@tag}", tag)
           assert_equal('bar', record['eventType0'])
           assert_equal(@hostname, record['hostname'])
@@ -81,8 +81,8 @@ class RecordReformerOutputTest < Test::Unit::TestCase
       test '(obsolete) output_tag' do
         config = %[output_tag reformed.${tag}]
         msgs = ['1']
-        events = feed(config, syntax: syntax, msgs: msgs)
-        events.each_with_index do |(tag, time, record), i|
+        emits = emit(config, use_v1, msgs)
+        emits.each_with_index do |(tag, time, record), i|
           assert_equal("reformed.#{@tag}", tag)
         end
       end
@@ -99,8 +99,8 @@ class RecordReformerOutputTest < Test::Unit::TestCase
         </record>
         ]
         msgs = ['1', '2']
-        events = feed(config, syntax: syntax, msgs: msgs)
-        events.each_with_index do |(tag, time, record), i|
+        emits = emit(config, use_v1, msgs)
+        emits.each_with_index do |(tag, time, record), i|
           assert_equal("reformed.#{@tag}", tag)
           assert_equal('bar', record['eventType0'])
           assert_equal(@hostname, record['hostname'])
@@ -112,8 +112,8 @@ class RecordReformerOutputTest < Test::Unit::TestCase
 
       test 'remove_keys' do
         config = CONFIG + %[remove_keys eventType0,message]
-        events = feed(config, syntax: syntax)
-        events.each_with_index do |(tag, time, record), i|
+        emits = emit(config, use_v1)
+        emits.each_with_index do |(tag, time, record), i|
           assert_equal("reformed.#{@tag}", tag)
           assert_not_include(record, 'eventType0')
           assert_equal(@hostname, record['hostname'])
@@ -126,8 +126,8 @@ class RecordReformerOutputTest < Test::Unit::TestCase
       test 'renew_record' do
         config = CONFIG + %[renew_record true]
         msgs = ['1', '2']
-        events = feed(config, syntax: syntax, msgs: msgs)
-        events.each_with_index do |(tag, time, record), i|
+        emits = emit(config, use_v1, msgs)
+        emits.each_with_index do |(tag, time, record), i|
           assert_equal("reformed.#{@tag}", tag)
           assert_not_include(record, 'eventType0')
           assert_equal(@hostname, record['hostname'])
@@ -148,8 +148,8 @@ class RecordReformerOutputTest < Test::Unit::TestCase
     </record>
 EOC
         msgs = times.map{|t| t.to_s }
-        events = feed(config, syntax: syntax, msgs: msgs)
-        events.each_with_index do |(tag, time, record), i|
+        emits = emit(config, use_v1, msgs)
+        emits.each_with_index do |(tag, time, record), i|
           assert_equal("reformed.#{@tag}", tag)
           assert_equal(times[i].to_i, time)
           assert_true(record.has_key?('event_time_key'))
@@ -168,8 +168,8 @@ EOC
 EOC
         times = [ Time.at(event_time("2010-05-04 03:02:02")), Time.at(event_time("2010-05-04 03:02:03")) ]
         msgs = times.map{|t| t.to_s }
-        events = feed(config, syntax: syntax, msgs: msgs)
-        events.each_with_index do |(tag, time, record), i|
+        emits = emit(config, use_v1, msgs)
+        emits.each_with_index do |(tag, time, record), i|
           assert_equal("reformed.#{@tag}", tag)
           assert_equal(times[i].to_i, time)
           assert_false(record.has_key?('event_time_key'))
@@ -179,8 +179,8 @@ EOC
       test 'keep_keys' do
         config = %[tag reformed.${tag}\nrenew_record true\nkeep_keys eventType0,message]
         msgs = ['1', '2']
-        events = feed(config, syntax: syntax, msgs: msgs)
-        events.each_with_index do |(tag, time, record), i|
+        emits = emit(config, use_v1, msgs)
+        emits.each_with_index do |(tag, time, record), i|
           assert_equal("reformed.#{@tag}", tag)
           assert_equal('bar', record['eventType0'])
           assert_equal(msgs[i], record['message'])
@@ -196,8 +196,8 @@ EOC
           </record>
         ]
         msgs = ['1', '2']
-        events = feed(config, syntax: syntax, msgs: msgs)
-        events.each_with_index do |(tag, time, record), i|
+        emits = emit(config, use_v1, msgs)
+        emits.each_with_index do |(tag, time, record), i|
           assert_equal("reformed.#{@tag}", tag)
           assert_equal("#{@hostname}  ", record['message'])
         end
@@ -215,8 +215,8 @@ EOC
               message ${hostname}
             </record>
           ]
-          events = feed(config, syntax: syntax)
-          events.each do |(tag, time, record)|
+          emits = emit(config, use_v1)
+          emits.each do |(tag, time, record)|
             assert_equal(@hostname, record['message'])
           end
         end
@@ -229,8 +229,8 @@ EOC
               message ${tag}
             </record>
           ]
-          events = feed(config, syntax: syntax)
-          events.each do |(tag, time, record)|
+          emits = emit(config, use_v1)
+          emits.each do |(tag, time, record)|
             assert_equal(@tag, record['message'])
           end
         end
@@ -244,8 +244,8 @@ EOC
             </record>
           ]
           expected = "#{@tag.split('.').first} #{@tag.split('.').last}"
-          events = feed(config, syntax: syntax)
-          events.each do |(tag, time, record)|
+          emits = emit(config, use_v1)
+          emits.each do |(tag, time, record)|
             assert_equal(expected, record['message'])
           end
         end
@@ -259,8 +259,8 @@ EOC
             </record>
           ]
           expected = "#{@tag.split('.').first} #{@tag.split('.').last}"
-          events = feed(config, syntax: syntax)
-          events.each do |(tag, time, record)|
+          emits = emit(config, use_v1)
+          emits.each do |(tag, time, record)|
             assert_equal(expected, record['message'])
           end
         end
@@ -275,8 +275,8 @@ EOC
           ]
           @tag = 'prefix.test.tag.suffix'
           expected = "prefix.test prefix.test.tag tag.suffix test.tag.suffix"
-          events = feed(config, syntax: syntax)
-          events.each do |(tag, time, record)|
+          emits = emit(config, use_v1)
+          emits.each do |(tag, time, record)|
             assert_equal(expected, record['message'])
           end
         end
@@ -289,8 +289,8 @@ EOC
               message ${time}
             </record>
           ]
-          events = feed(config, syntax: syntax)
-          events.each do |(tag, time, record)|
+          emits = emit(config, use_v1)
+          emits.each do |(tag, time, record)|
             assert_equal(Time.at(time).localtime.to_s, record['message'])
           end
         end
@@ -306,8 +306,8 @@ EOC
             </record>
           ]
           msgs = ['1', '2']
-          events = feed(config, syntax: syntax, msgs: msgs)
-          events.each_with_index do |(tag, time, record), i|
+          emits = emit(config, use_v1, msgs)
+          emits.each_with_index do |(tag, time, record), i|
             assert_not_include(record, 'eventType0')
             assert_equal("bar", record['eventtype'])
             assert_equal("bar #{msgs[i]}", record['message'])
@@ -326,8 +326,8 @@ EOC
             </record>
           ]
           records = [{'tag' => 'tag', 'time' => 'time'}]
-          events = feed(config, syntax: syntax, msgs: records)
-          events.each do |(tag, time, record)|
+          emits = emit(config, use_v1, records)
+          emits.each do |(tag, time, record)|
             assert_not_equal('tag', record['new_tag'])
             assert_equal(@tag, record['new_tag'])
             assert_not_equal('time', record['new_time'])
@@ -346,7 +346,7 @@ EOC
             </record>
           ]
           msgs = ['1', '2']
-          es = feed(config, syntax: syntax, msgs: msgs)
+          es = emit(config, use_v1, msgs)
           es.each_with_index do |(tag, time, record), i|
             assert_equal({"hostname" => @hostname, "tag" => @tag, "#{@tag}" => 100}, record['hash_field'])
           end
@@ -361,7 +361,7 @@ EOC
             </record>
           ]
           msgs = ['1', '2']
-          es = feed(config, syntax: syntax, msgs: msgs)
+          es = emit(config, use_v1, msgs)
           es.each_with_index do |(tag, time, record), i|
             assert_equal([@hostname, @tag], record['array_field'])
           end
@@ -376,13 +376,13 @@ EOC
             </record>
           ]
           msgs = ['1', '2']
-          es = feed(config, syntax: syntax, msgs: msgs)
+          es = emit(config, use_v1, msgs)
           es.each_with_index do |(tag, time, record), i|
             assert_equal([{"tag" => @tag}], record['mixed_field'])
           end
         end
 
-        if syntax == :v1
+        if use_v1 == true
           # works with only v1 config
           test "keys with placeholders with enable_ruby #{enable_ruby}" do
             config = %[
@@ -395,7 +395,7 @@ EOC
               </record>
             ]
             msgs = ['1', '2']
-            es = feed(config, syntax: syntax, msgs: msgs)
+            es = emit(config, use_v1, msgs)
             es.each_with_index do |(tag, time, record), i|
               assert_equal({@hostname=>'hostname',"foo.#{@tag}"=>'tag'}, record)
             end
@@ -444,7 +444,7 @@ EOC
               :with_suffix => "#{nil.to_s}-suffix" },
           ]
           actual_results = []
-          es = feed(config, syntax: syntax, msgs: msgs)
+          es = emit(config, use_v1, msgs)
           es.each_with_index do |(tag, time, record), i|
             actual_results << {
               :single      => record["single"],
@@ -498,7 +498,7 @@ EOC
               :with_suffix => "#{nil.to_s}-suffix" },
           ]
           actual_results = []
-          es = feed(config, syntax: syntax, msgs: msgs)
+          es = emit(config, use_v1, msgs)
           es.each_with_index do |(tag, time, record), i|
             actual_results << {
               :single      => record["single"],
@@ -520,12 +520,12 @@ EOC
               _foo_bar   ${record["foo.bar"]}
             </record>
           ]
-          d = create_driver(config, syntax: syntax)
+          d = create_driver(config, use_v1)
           record = {
             "foo.bar"    => "foo.bar",
             "@timestamp" => 10,
           }
-          es = feed(config, syntax: syntax, msgs: [record])
+          es = emit(config, use_v1, [record])
           es.each_with_index do |(tag, time, r), i|
             assert { r['_timestamp'] == record['@timestamp'] }
             assert { r['_foo_bar'] == record['foo.bar'] }
@@ -541,10 +541,10 @@ EOC
             message ${unknown}
           </record>
         ]
-        d = create_driver(config, syntax: syntax)
+        d = create_driver(config, use_v1)
         mock(d.instance.log).warn("record_reformer: unknown placeholder `${unknown}` found")
-        d.run { d.feed(@time, {}) }
-        assert_equal 1, d.events.size
+        d.run { d.emit({}, @time) }
+        assert_equal 1, d.emits.size
       end
 
       test 'failed to expand record field (enable_ruby yes)' do
@@ -555,12 +555,12 @@ EOC
             message ${unknown['bar']}
           </record>
         ]
-        d = create_driver(config, syntax: syntax)
+        d = create_driver(config, use_v1)
         mock(d.instance.log).warn("record_reformer: failed to expand `%Q[\#{unknown['bar']}]`", anything)
-        d.run { d.feed(@time, {}) }
-        # feed, but nil value
-        assert_equal 1, d.events.size
-        d.events.each do |(tag, time, record)|
+        d.run { d.emit({}, @time) }
+        # emit, but nil value
+        assert_equal 1, d.emits.size
+        d.emits.each do |(tag, time, record)|
           assert_nil(record['message'])
         end
       end
@@ -570,11 +570,11 @@ EOC
           tag ${unknown['bar']}
           enable_ruby yes
         ]
-        d = create_driver(config, syntax: syntax)
+        d = create_driver(config, use_v1)
         mock(d.instance.log).warn("record_reformer: failed to expand `%Q[\#{unknown['bar']}]`", anything)
-        d.run { d.feed(@time, {}) }
-        # nil tag message should not be feedted
-        assert_equal 0, d.events.size
+        d.run { d.emit({}, @time) }
+        # nil tag message should not be emitted
+        assert_equal 0, d.emits.size
       end
 
       test 'expand fields starting with @ (enable_ruby no)' do
@@ -585,10 +585,10 @@ EOC
             foo ${@timestamp}
           </record>
         ]
-        d = create_driver(config, syntax: syntax)
+        d = create_driver(config, use_v1)
         message = {"@timestamp" => "foo"}
-        d.run { d.feed(@time, message) }
-        d.events.each do |(tag, time, record)|
+        d.run { d.emit(message, @time) }
+        d.emits.each do |(tag, time, record)|
           assert_equal message["@timestamp"], record["foo"]
         end
       end
@@ -603,10 +603,10 @@ EOC
             foo ${record.map{|k,v|v}}
           </record>
         ]
-        d = create_driver(config, syntax: syntax)
+        d = create_driver(config, use_v1)
         message = {"@timestamp" => "foo"}
-        d.run { d.feed(@time, message) }
-        d.events.each do |(tag, time, record)|
+        d.run { d.emit(message, @time) }
+        d.emits.each do |(tag, time, record)|
           assert_equal [message["@timestamp"]], record["foo"]
         end
       end
@@ -619,16 +619,16 @@ EOC
             foo ${__send__("@timestamp")}
           </record>
         ]
-        d = create_driver(config, syntax: syntax)
+        d = create_driver(config, use_v1)
         message = {"@timestamp" => "foo"}
-        d.run { d.feed(@time, message) }
-        d.events.each do |(tag, time, record)|
+        d.run { d.emit(message, @time) }
+        d.emits.each do |(tag, time, record)|
           assert_equal message["@timestamp"], record["foo"]
         end
       end
     end
 
-    test "compatibility test (enable_ruby yes) (syntax: #{syntax})" do
+    test "compatibility test (enable_ruby yes) (use_v1 #{use_v1})" do
       config = %[
         tag tag
         enable_ruby yes
@@ -642,7 +642,7 @@ EOC
           _foo_bar   ${__send__('foo.bar')}
         </record>
       ]
-      d = create_driver(config, syntax: syntax)
+      d = create_driver(config, use_v1)
       record = {
         "number"     => "-",
         "hex"        => "0x10",
@@ -650,8 +650,8 @@ EOC
         "@timestamp" => 10,
         "message"    => "10",
       }
-      events = feed(config, syntax: syntax, msgs: [record])
-      events.each_with_index do |(tag, time, r), i|
+      es = emit(config, use_v1, [record])
+      es.each_with_index do |(tag, time, r), i|
         assert { r['_message'] == "prefix-#{record['message']}-suffix" }
         assert { r['_time'] == Time.at(@time) }
         assert { r['_number'] == 0 }
